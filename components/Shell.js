@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import Logo from "@/components/Logo";
 
 const LINKS = [
   { href: "/dashboard", label: "Agenda", icon: "📅" },
@@ -26,6 +27,7 @@ export default function Shell({ user, children }) {
         style={{
           width: 232,
           flexShrink: 0,
+          background: "#fff",
           borderRight: "1px solid var(--card-border)",
           padding: "1.4rem 1rem",
           display: "flex",
@@ -33,13 +35,8 @@ export default function Shell({ user, children }) {
           gap: "0.3rem",
         }}
       >
-        <div style={{ padding: "0.4rem 0.6rem 1.4rem" }}>
-          <p className="display" style={{ fontSize: "1.25rem", margin: 0 }}>
-            Caderno
-          </p>
-          <p style={{ fontSize: "0.75rem", color: "var(--ink-soft)", margin: 0 }}>
-            gestão de encomendas
-          </p>
+        <div style={{ padding: "0.4rem 0.6rem 1.6rem" }}>
+          <Logo variant="sidebar" />
         </div>
 
         {LINKS.filter((l) => !l.adminOnly || user?.papel === "admin").map((link) => {
@@ -58,14 +55,42 @@ export default function Shell({ user, children }) {
 
         <div style={{ marginTop: "auto", paddingTop: "1rem" }}>
           <div
+            className="card"
             style={{
-              fontSize: "0.85rem",
-              color: "var(--ink-soft)",
+              display: "flex",
+              alignItems: "center",
+              gap: "0.6rem",
+              padding: "0.6rem 0.7rem",
               marginBottom: "0.6rem",
-              padding: "0 0.6rem",
+              border: "1px solid var(--card-border)",
+              boxShadow: "none",
             }}
           >
-            {user?.nome} {user?.papel === "admin" ? "· admin" : ""}
+            <div
+              style={{
+                width: 34,
+                height: 34,
+                borderRadius: "50%",
+                background: "var(--brand-soft)",
+                color: "var(--brand)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontWeight: 700,
+                fontSize: "0.9rem",
+                flexShrink: 0,
+              }}
+            >
+              {user?.nome?.charAt(0)?.toUpperCase() || "?"}
+            </div>
+            <div style={{ lineHeight: 1.2, overflow: "hidden" }}>
+              <div style={{ fontWeight: 600, fontSize: "0.85rem", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                {user?.nome}
+              </div>
+              <div style={{ fontSize: "0.75rem", color: "var(--ink-soft)" }}>
+                {user?.papel === "admin" ? "Administradora" : "Membro"}
+              </div>
+            </div>
           </div>
           <button onClick={sair} className="btn btn-outline" style={{ width: "100%" }}>
             Sair

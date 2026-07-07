@@ -101,7 +101,7 @@ export default function UsuariosPage() {
                 <div key={u.id} className="card" style={{ padding: "0.9rem 1.1rem", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                   <div>
                     <strong>{u.nome}</strong>{" "}
-                    <span className="badge" style={{ background: u.papel === "admin" ? "#f1e6f6" : "var(--sage-bg)", color: u.papel === "admin" ? "#7a4fa0" : "var(--sage)" }}>
+                    <span className="badge" style={{ background: u.papel === "admin" ? "var(--purple-bg)" : "var(--sage-bg)", color: u.papel === "admin" ? "var(--purple)" : "var(--sage)" }}>
                       {u.papel === "admin" ? "Admin" : "Membro"}
                     </span>
                     <div style={{ fontSize: "0.85rem", color: "var(--ink-soft)" }}>{u.email}</div>

@@ -1,19 +1,23 @@
 @import "tailwindcss";
 
 :root {
-  /* Palette — "caderno de receitas" theme, avoiding the generic AI cream+terracotta pairing */
-  --bg: #fff8f2;
-  --ink: #3a2419;
-  --ink-soft: #7a5c4c;
-  --accent: #c6486b; /* framboesa */
-  --accent-dark: #a53356;
+  /* Palette — "Casa do Bolo": rosa doce sobre branco, com o bordô da marca como acento */
+  --bg: #fdf3f6;
+  --ink: #4a1930;
+  --ink-soft: #9c7086;
+  --accent: #e0457e; /* rosa da marca */
+  --accent-dark: #b9285f;
+  --brand: #6b1f3a; /* bordô do logo */
+  --brand-soft: #f8e5ed;
   --honey: #e8a33d;
-  --sage: #6b8f5a;
-  --sage-bg: #eef3ea;
+  --sage: #45a35f;
+  --sage-bg: #e6f5ea;
+  --purple: #8a4f9e;
+  --purple-bg: #f4e6f5;
   --card: #ffffff;
-  --card-border: #ecdfd3;
-  --shadow: 0 2px 10px rgba(58, 36, 25, 0.06);
-  --shadow-lift: 0 8px 24px rgba(58, 36, 25, 0.12);
+  --card-border: #f6dce6;
+  --shadow: 0 2px 10px rgba(107, 31, 58, 0.06);
+  --shadow-lift: 0 10px 26px rgba(107, 31, 58, 0.14);
 
   --font-display: var(--font-fraunces);
   --font-body: var(--font-inter);
@@ -79,8 +83,8 @@ button {
   align-items: center;
   justify-content: center;
   gap: 0.4rem;
-  padding: 0.6rem 1.1rem;
-  border-radius: 10px;
+  padding: 0.6rem 1.2rem;
+  border-radius: 999px;
   font-weight: 600;
   font-size: 0.9rem;
   border: 1px solid transparent;
@@ -93,12 +97,13 @@ button {
 .btn-primary {
   background: var(--accent);
   color: #fff;
+  box-shadow: 0 6px 16px rgba(224, 69, 126, 0.28);
 }
 .btn-primary:hover {
   background: var(--accent-dark);
 }
 .btn-outline {
-  background: transparent;
+  background: #fff;
   border-color: var(--card-border);
   color: var(--ink);
 }
@@ -118,7 +123,7 @@ button {
 .card {
   background: var(--card);
   border: 1px solid var(--card-border);
-  border-radius: 16px;
+  border-radius: 18px;
   box-shadow: var(--shadow);
 }
 
@@ -157,18 +162,17 @@ textarea.input {
   font-size: 0.75rem;
   font-weight: 600;
 }
-.badge-novo { background: #f1e6f6; color: #7a4fa0; }
+.badge-novo { background: var(--purple-bg); color: var(--purple); }
 .badge-em_producao { background: #fdf1de; color: #a5680f; }
 .badge-pronto { background: var(--sage-bg); color: var(--sage); }
-.badge-entregue { background: #e5eef7; color: #3d6ea5; }
+.badge-entregue { background: var(--brand-soft); color: var(--brand); }
 .badge-cancelado { background: #f6e6e6; color: #a53333; }
 
-/* Signature element: cartão de receita — evoca o caderno de anotações */
 .index-card {
   position: relative;
   background: var(--card);
   border: 1px solid var(--card-border);
-  border-radius: 4px 14px 14px 14px;
+  border-radius: 18px;
   box-shadow: var(--shadow);
   padding: 1.1rem 1.2rem 1rem;
   transition: box-shadow 0.15s ease, transform 0.15s ease;
@@ -177,33 +181,26 @@ textarea.input {
   box-shadow: var(--shadow-lift);
   transform: translateY(-2px);
 }
-.index-card::before {
-  content: "";
-  position: absolute;
-  top: -1px;
-  left: -1px;
-  width: 46px;
-  height: 10px;
-  background: var(--honey);
-  border-radius: 4px 0 8px 0;
-}
 
 .sidebar-link {
   display: flex;
   align-items: center;
   gap: 0.6rem;
-  padding: 0.55rem 0.9rem;
-  border-radius: 10px;
+  padding: 0.6rem 0.9rem;
+  border-radius: 12px;
   color: var(--ink-soft);
   font-weight: 500;
   font-size: 0.92rem;
+  transition: background 0.12s ease, color 0.12s ease;
 }
 .sidebar-link.active {
-  background: #fbeee4;
-  color: var(--accent-dark);
+  background: var(--accent);
+  color: #fff;
   font-weight: 600;
+  box-shadow: 0 6px 14px rgba(224, 69, 126, 0.3);
 }
-.sidebar-link:hover {
-  background: #faf3ec;
+.sidebar-link:hover:not(.active) {
+  background: var(--brand-soft);
+  color: var(--brand);
 }
 

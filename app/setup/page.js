@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Logo from "@/components/Logo";
 
 export default function SetupPage() {
   const router = useRouter();
@@ -52,6 +53,7 @@ export default function SetupPage() {
   if (jaConfigurado) {
     return (
       <Centro>
+        <Logo variant="stacked" />
         <div className="card" style={{ padding: "2rem", maxWidth: 420, textAlign: "center" }}>
           <h1 className="display" style={{ fontSize: "1.4rem", marginBottom: "0.5rem" }}>
             Já existe um administrador
@@ -69,6 +71,7 @@ export default function SetupPage() {
 
   return (
     <Centro>
+      <Logo variant="stacked" />
       <form onSubmit={handleSubmit} className="card" style={{ padding: "2.2rem", width: 400 }}>
         <p className="label" style={{ color: "var(--accent)" }}>Configuração inicial</p>
         <h1 className="display" style={{ fontSize: "1.6rem", marginBottom: "0.3rem" }}>
@@ -132,8 +135,10 @@ function Centro({ children }) {
       style={{
         minHeight: "100vh",
         display: "flex",
+        flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
+        gap: "1.6rem",
         padding: "1.5rem",
       }}
     >

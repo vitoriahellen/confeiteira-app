@@ -25,12 +25,20 @@ const STATUS_LABEL = {
   cancelado: "Cancelado",
 };
 
+function saudacao() {
+  const hora = new Date().getHours();
+  if (hora < 12) return "Bom dia";
+  if (hora < 18) return "Boa tarde";
+  return "Boa noite";
+}
+
 export default function DashboardPage() {
   const [modo, setModo] = useState("semana"); // 'semana' | 'mes'
   const [referencia, setReferencia] = useState(new Date());
   const [pedidos, setPedidos] = useState([]);
   const [carregando, setCarregando] = useState(true);
   const [diaSelecionado, setDiaSelecionado] = useState(null);
+  const [usuario, setUsuario] = useState(null);
 
   useEffect(() => {
     setCarregando(true);
@@ -41,6 +49,11 @@ export default function DashboardPage() {
         setCarregando(false);
       })
       .catch(() => setCarregando(false));
+
+    fetch("/api/auth/me")
+      .then((r) => r.json())
+      .then((data) => setUsuario(data.user))
+      .catch(() => {});
   }, []);
 
   const pedidosPorDia = useMemo(() => {
@@ -76,6 +89,17 @@ export default function DashboardPage() {
 
   return (
     <div>
+      {usuario?.nome && (
+        <div style={{ marginBottom: "1.4rem" }}>
+          <h1 className="display" style={{ fontSize: "1.7rem", margin: 0 }}>
+            {saudacao()}, {usuario.nome.split(" ")[0]}! 🌸
+          </h1>
+          <p style={{ color: "var(--ink-soft)", margin: "0.2rem 0 0" }}>
+            Que tal mais um dia doce e produtivo?
+          </p>
+        </div>
+      )}
+
       <header style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: "1.6rem" }}>
         <div>
           <p className="label" style={{ color: "var(--accent)" }}>Agenda</p>
@@ -123,7 +147,7 @@ export default function DashboardPage() {
             const chave = format(dia, "yyyy-MM-dd");
             const doDia = pedidosPorDia[chave] || [];
             return (
-              <div key={chave} className="card" style={{ padding: "0.8rem", minHeight: 220, background: isToday(dia) ? "#fff6ee" : "var(--card)" }}>
+              <div key={chave} className="card" style={{ padding: "0.8rem", minHeight: 220, background: isToday(dia) ? "var(--brand-soft)" : "var(--card)" }}>
                 <p style={{ fontSize: "0.75rem", color: "var(--ink-soft)", textTransform: "uppercase", margin: 0 }}>
                   {format(dia, "EEE", { locale: ptBR })}
                 </p>
@@ -140,7 +164,7 @@ export default function DashboardPage() {
                         fontSize: "0.8rem",
                         padding: "0.4rem 0.5rem",
                         borderRadius: 8,
-                        background: "#fbeee4",
+                        background: "var(--brand-soft)",
                         color: "var(--ink)",
                       }}
                     >
@@ -177,7 +201,7 @@ export default function DashboardPage() {
                     textAlign: "left",
                     cursor: "pointer",
                     opacity: foraDoMes ? 0.4 : 1,
-                    background: diaSelecionado && isSameDay(dia, diaSelecionado) ? "#fbeee4" : "var(--card)",
+                    background: diaSelecionado && isSameDay(dia, diaSelecionado) ? "var(--brand-soft)" : "var(--card)",
                     border: isToday(dia) ? "1px solid var(--accent)" : "1px solid var(--card-border)",
                   }}
                 >

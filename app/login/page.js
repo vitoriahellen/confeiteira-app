@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Logo from "@/components/Logo";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -38,13 +39,15 @@ export default function LoginPage() {
       style={{
         minHeight: "100vh",
         display: "flex",
+        flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
+        gap: "1.6rem",
         padding: "1.5rem",
       }}
     >
+      <Logo variant="stacked" />
       <form onSubmit={handleSubmit} className="card" style={{ padding: "2.2rem", width: 380 }}>
-        <p className="label" style={{ color: "var(--accent)" }}>Caderno</p>
         <h1 className="display" style={{ fontSize: "1.6rem", marginBottom: "1.4rem" }}>
           Entrar
         </h1>

@@ -1,4 +1,4 @@
-import { Fraunces, Inter, IBM_Plex_Mono } from "next/font/google";
+import { Fraunces, Inter, IBM_Plex_Mono, Dancing_Script } from "next/font/google";
 import "./globals.css";
 
 const fraunces = Fraunces({
@@ -20,15 +20,23 @@ const plexMono = IBM_Plex_Mono({
   weight: ["400", "500"],
 });
 
+const dancingScript = Dancing_Script({
+  variable: "--font-script",
+  subsets: ["latin"],
+  weight: ["600", "700"],
+});
+
 export const metadata = {
-  title: "Caderno — Gestão de encomendas",
+  title: "Casa do Bolo — Gestão de encomendas",
   description: "Sistema de pedidos, lembretes e agenda para confeiteiras",
 };
 
 export default function RootLayout({ children }) {
   return (
     <html lang="pt-BR">
-      <body className={`${fraunces.variable} ${inter.variable} ${plexMono.variable}`}>
+      <body
+        className={`${fraunces.variable} ${inter.variable} ${plexMono.variable} ${dancingScript.variable}`}
+      >
         {children}
       </body>
     </html>
