@@ -19,9 +19,9 @@
   --shadow: 0 2px 10px rgba(107, 31, 58, 0.06);
   --shadow-lift: 0 10px 26px rgba(107, 31, 58, 0.14);
 
-  --font-display: var(--font-poppins);
-  --font-body: var(--font-poppins);
-  --font-mono: var(--font-plex-mono);
+  --font-display: var(--font-poppins, "Poppins", sans-serif);
+  --font-body: var(--font-poppins, "Poppins", sans-serif);
+  --font-mono: var(--font-plex-mono, monospace);
 }
 
 * {

@@ -26,12 +26,11 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="pt-BR">
-      <body
-        className={`${poppins.variable} ${plexMono.variable} ${dancingScript.variable}`}
-      >
-        {children}
-      </body>
+    <html
+      lang="pt-BR"
+      className={`${poppins.variable} ${plexMono.variable} ${dancingScript.variable}`}
+    >
+      <body>{children}</body>
     </html>
   );
 }
