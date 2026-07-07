@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { query, ensureSchema } from "@/lib/db";
 import { enviarWhatsApp } from "@/lib/zapi";
+import { renderTemplate, TEMPLATES_PADRAO, formatarMoeda } from "@/lib/lembretes";
 
 function autorizado(request) {
   const secret = process.env.CRON_SECRET;
@@ -9,9 +10,9 @@ function autorizado(request) {
   return auth === `Bearer ${secret}`;
 }
 
-async function getDias(chave, padrao) {
+async function getConfig(chave, padrao) {
   const result = await query("SELECT valor FROM configuracoes WHERE chave = $1", [chave]);
-  return result.rows[0] ? Number(result.rows[0].valor) : padrao;
+  return result.rows[0] ? result.rows[0].valor : padrao;
 }
 
 export async function GET(request) {
@@ -20,7 +21,9 @@ export async function GET(request) {
   }
 
   await ensureSchema();
-  const dias = await getDias("dias_lembrete_pagamento", 2);
+  const dias = Number(await getConfig("dias_lembrete_pagamento", 2));
+  const modeloSinal = await getConfig("mensagem_sinal", TEMPLATES_PADRAO.mensagem_sinal);
+  const modeloRestante = await getConfig("mensagem_restante", TEMPLATES_PADRAO.mensagem_restante);
 
   const enviados = [];
 
@@ -39,11 +42,12 @@ export async function GET(request) {
 
   for (const pedido of sinalRes.rows) {
     if (!pedido.cliente_telefone) continue;
-    const mensagem =
-      `Olá, ${pedido.cliente_nome}! Passando para lembrar do sinal do seu pedido ` +
-      `(${pedido.itens}), no valor de R$ ${Number(pedido.valor_sinal).toFixed(2)}, ` +
-      `com vencimento em ${new Date(pedido.data_vencimento_sinal).toLocaleDateString("pt-BR")}. ` +
-      `Qualquer dúvida, estou à disposição! 🍰`;
+    const mensagem = renderTemplate(modeloSinal, {
+      nomedocliente: pedido.cliente_nome,
+      valor: formatarMoeda(pedido.valor_sinal),
+      itens: pedido.itens,
+      data: new Date(pedido.data_vencimento_sinal).toLocaleDateString("pt-BR"),
+    });
     const resultado = await enviarWhatsApp(pedido.cliente_telefone, mensagem);
     if (resultado.ok) {
       await query(
@@ -71,11 +75,12 @@ export async function GET(request) {
   for (const pedido of restanteRes.rows) {
     if (!pedido.cliente_telefone) continue;
     const restante = Number(pedido.valor_total) - Number(pedido.valor_sinal);
-    const mensagem =
-      `Olá, ${pedido.cliente_nome}! Passando para lembrar do pagamento restante do seu pedido ` +
-      `(${pedido.itens}), no valor de R$ ${restante.toFixed(2)}, ` +
-      `com vencimento em ${new Date(pedido.data_vencimento_restante).toLocaleDateString("pt-BR")}. ` +
-      `Qualquer dúvida, estou à disposição! 🍰`;
+    const mensagem = renderTemplate(modeloRestante, {
+      nomedocliente: pedido.cliente_nome,
+      valor: formatarMoeda(restante),
+      itens: pedido.itens,
+      data: new Date(pedido.data_vencimento_restante).toLocaleDateString("pt-BR"),
+    });
     const resultado = await enviarWhatsApp(pedido.cliente_telefone, mensagem);
     if (resultado.ok) {
       await query(

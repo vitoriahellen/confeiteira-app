@@ -42,6 +42,7 @@ export default function DashboardPage() {
   const [diaSelecionado, setDiaSelecionado] = useState(null);
   const [usuario, setUsuario] = useState(null);
   const [periodoDias, setPeriodoDias] = useState(30);
+  const [templates, setTemplates] = useState(null);
 
   useEffect(() => {
     setCarregando(true);
@@ -56,6 +57,11 @@ export default function DashboardPage() {
     fetch("/api/auth/me")
       .then((r) => r.json())
       .then((data) => setUsuario(data.user))
+      .catch(() => {});
+
+    fetch("/api/settings")
+      .then((r) => r.json())
+      .then((data) => setTemplates(data.config || null))
       .catch(() => {});
   }, []);
 
@@ -308,13 +314,13 @@ export default function DashboardPage() {
       )}
       </div>
 
-      <PainelLembretes itens={lembretesPendentes} />
+      <PainelLembretes itens={lembretesPendentes} templates={templates} />
       </div>
     </div>
   );
 }
 
-function PainelLembretes({ itens }) {
+function PainelLembretes({ itens, templates }) {
   return (
     <div className="card" style={{ padding: "1.1rem" }}>
       <h3 className="display" style={{ fontSize: "1.05rem", margin: "0 0 0.9rem" }}>🔔 Próximos lembretes</h3>
@@ -323,7 +329,7 @@ function PainelLembretes({ itens }) {
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: "0.6rem" }}>
           {itens.map((item) => {
-            const link = linkWhatsApp(item.telefone, mensagemPadrao(item));
+            const link = linkWhatsApp(item.telefone, mensagemPadrao(item, templates));
             return (
               <div
                 key={`${item.pedidoId}-${item.tipo}`}

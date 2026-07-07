@@ -1,10 +1,12 @@
 import { NextResponse } from "next/server";
 import { query, ensureSchema } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth";
+import { TEMPLATES_PADRAO } from "@/lib/lembretes";
 
 const DEFAULTS = {
   dias_lembrete_pagamento: "2",
   dias_alerta_entrega: "3",
+  ...TEMPLATES_PADRAO,
 };
 
 const CHAVES_PERMITIDAS = [...Object.keys(DEFAULTS), "logo_url"];

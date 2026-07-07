@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { query, ensureSchema } from "@/lib/db";
 import { enviarWhatsApp } from "@/lib/zapi";
+import { renderTemplate, TEMPLATES_PADRAO } from "@/lib/lembretes";
 
 function autorizado(request) {
   const secret = process.env.CRON_SECRET;
@@ -9,9 +10,9 @@ function autorizado(request) {
   return auth === `Bearer ${secret}`;
 }
 
-async function getDias(chave, padrao) {
+async function getConfig(chave, padrao) {
   const result = await query("SELECT valor FROM configuracoes WHERE chave = $1", [chave]);
-  return result.rows[0] ? Number(result.rows[0].valor) : padrao;
+  return result.rows[0] ? result.rows[0].valor : padrao;
 }
 
 export async function GET(request) {
@@ -20,7 +21,8 @@ export async function GET(request) {
   }
 
   await ensureSchema();
-  const dias = await getDias("dias_alerta_entrega", 3);
+  const dias = Number(await getConfig("dias_alerta_entrega", 3));
+  const modeloEntrega = await getConfig("mensagem_entrega", TEMPLATES_PADRAO.mensagem_entrega);
 
   const enviados = [];
 
@@ -36,9 +38,12 @@ export async function GET(request) {
   for (const pedido of result.rows) {
     // Alerta interno (equipe) — envia para o próprio número configurado como admin, se houver
     const numeroInterno = process.env.ZAPI_NUMERO_INTERNO;
-    const mensagemInterna =
-      `⏰ Faltam ${dias} dias para a entrega do pedido de ${pedido.cliente_nome} ` +
-      `(${pedido.itens}), previsto para ${new Date(pedido.data_entrega).toLocaleDateString("pt-BR")}.`;
+    const mensagemInterna = renderTemplate(modeloEntrega, {
+      nomedocliente: pedido.cliente_nome,
+      itens: pedido.itens,
+      data: new Date(pedido.data_entrega).toLocaleDateString("pt-BR"),
+      dias,
+    });
 
     if (numeroInterno) {
       await enviarWhatsApp(numeroInterno, mensagemInterna);

@@ -12,6 +12,7 @@ const LINKS = [
   { href: "/produtos", label: "Produtos", icon: "🎂" },
   { href: "/clientes", label: "Clientes", icon: "📇" },
   { href: "/financeiro", label: "Financeiro", icon: "💰" },
+  { href: "/mensageria", label: "Mensageria", icon: "📨" },
   { href: "/usuarios", label: "Usuárias", icon: "👥", adminOnly: true },
   { href: "/configuracoes", label: "Configurações", icon: "⚙️", adminOnly: true },
 ];

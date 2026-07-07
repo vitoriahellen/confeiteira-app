@@ -2,11 +2,13 @@
 
 import { useEffect, useState } from "react";
 import Logo from "@/components/Logo";
+import { TEMPLATES_PADRAO, renderTemplate } from "@/lib/lembretes";
 
 export default function ConfiguracoesPage() {
   const [config, setConfig] = useState({
     dias_lembrete_pagamento: "2",
     dias_alerta_entrega: "3",
+    ...TEMPLATES_PADRAO,
   });
   const [zapiConfigurada, setZapiConfigurada] = useState(false);
   const [carregando, setCarregando] = useState(true);
@@ -174,11 +176,57 @@ export default function ConfiguracoesPage() {
           As mensagens automáticas são verificadas uma vez por dia, às 09h (horário de Brasília).
           Horário configurável exige o plano Pro da Vercel.
         </p>
+
+        <hr style={{ border: "none", borderTop: "1px solid var(--card-border)", margin: "0.2rem 0" }} />
+
+        <h3 className="display" style={{ fontSize: "1.05rem", margin: 0 }}>Personalizar mensagens</h3>
+        <p style={{ fontSize: "0.78rem", color: "var(--ink-soft)", marginTop: "-0.6rem" }}>
+          Use <code className="mono">{"{{nomedocliente}}"}</code>, <code className="mono">{"{{valor}}"}</code>,{" "}
+          <code className="mono">{"{{itens}}"}</code> e <code className="mono">{"{{data}}"}</code> onde quiser — o
+          sistema substitui pelos dados de cada pedido.
+        </p>
+
+        <CampoMensagem
+          label="Cobrança do sinal"
+          value={config.mensagem_sinal}
+          onChange={(v) => setConfig({ ...config, mensagem_sinal: v })}
+          exemplo={{ nomedocliente: "Ana", valor: "29,95", itens: "1x Bolo Decorado", data: "09/07/2026" }}
+        />
+        <CampoMensagem
+          label="Cobrança do restante"
+          value={config.mensagem_restante}
+          onChange={(v) => setConfig({ ...config, mensagem_restante: v })}
+          exemplo={{ nomedocliente: "Ana", valor: "29,95", itens: "1x Bolo Decorado", data: "09/07/2026" }}
+        />
+        <CampoMensagem
+          label="Alerta de entrega (mensagem interna, enviada pro seu WhatsApp)"
+          value={config.mensagem_entrega}
+          onChange={(v) => setConfig({ ...config, mensagem_entrega: v })}
+          exemplo={{ nomedocliente: "Ana", itens: "1x Bolo Decorado", data: "14/07/2026", dias: "3" }}
+        />
+
         <button type="submit" className="btn btn-primary" disabled={salvando}>
           {salvando ? "Salvando..." : "Salvar configurações"}
         </button>
         {salvo && <p style={{ color: "var(--sage)", fontSize: "0.85rem" }}>Configurações salvas.</p>}
       </form>
+    </div>
+  );
+}
+
+function CampoMensagem({ label, value, onChange, exemplo }) {
+  return (
+    <div>
+      <label className="label">{label}</label>
+      <textarea
+        className="input"
+        rows={3}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+      />
+      <p style={{ fontSize: "0.78rem", color: "var(--ink-soft)", marginTop: "0.3rem" }}>
+        Prévia: <em>{renderTemplate(value, exemplo)}</em>
+      </p>
     </div>
   );
 }
