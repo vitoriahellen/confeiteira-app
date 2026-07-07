@@ -20,7 +20,7 @@ export default function Logo({ variant = "sidebar", logoUrl }) {
         <img
           src={logoUrl}
           alt="Logo"
-          style={{ maxWidth: 240, maxHeight: 180, borderRadius: 20, objectFit: "contain" }}
+          style={{ display: "block", width: "auto", height: "auto", maxWidth: 320, maxHeight: 220, objectFit: "contain" }}
         />
       );
     }
@@ -29,7 +29,7 @@ export default function Logo({ variant = "sidebar", logoUrl }) {
       <img
         src={logoUrl}
         alt="Logo"
-        style={{ width: 40, height: 40, borderRadius: 10, objectFit: "cover", flexShrink: 0 }}
+        style={{ display: "block", width: "auto", height: "auto", maxWidth: "100%", maxHeight: 76, objectFit: "contain" }}
       />
     );
   }
