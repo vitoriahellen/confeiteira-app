@@ -7,7 +7,6 @@ export default function ConfiguracoesPage() {
   const [config, setConfig] = useState({
     dias_lembrete_pagamento: "2",
     dias_alerta_entrega: "3",
-    hora_disparo_lembretes: "09:00",
   });
   const [zapiConfigurada, setZapiConfigurada] = useState(false);
   const [carregando, setCarregando] = useState(true);
@@ -171,18 +170,10 @@ export default function ConfiguracoesPage() {
             onChange={(e) => setConfig({ ...config, dias_alerta_entrega: e.target.value })}
           />
         </div>
-        <div>
-          <label className="label">Horário de envio das mensagens automáticas</label>
-          <input
-            className="input"
-            type="time"
-            value={config.hora_disparo_lembretes}
-            onChange={(e) => setConfig({ ...config, hora_disparo_lembretes: e.target.value })}
-          />
-          <p style={{ fontSize: "0.78rem", color: "var(--ink-soft)", marginTop: "0.3rem" }}>
-            Horário de Brasília. As verificações rodam a cada hora e só disparam mensagens no horário escolhido.
-          </p>
-        </div>
+        <p style={{ fontSize: "0.78rem", color: "var(--ink-soft)" }}>
+          As mensagens automáticas são verificadas uma vez por dia, às 09h (horário de Brasília).
+          Horário configurável exige o plano Pro da Vercel.
+        </p>
         <button type="submit" className="btn btn-primary" disabled={salvando}>
           {salvando ? "Salvando..." : "Salvar configurações"}
         </button>
