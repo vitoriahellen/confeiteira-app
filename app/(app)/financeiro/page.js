@@ -78,12 +78,7 @@ export default function FinanceiroPage() {
 
   useEffect(() => {
     setCarregando(true);
-    const { de, ate } = periodo === "custom"
-      ? { de: deCustom || null, ate: ateCustom || null }
-      : calcularPeriodo(periodo);
     const params = new URLSearchParams();
-    if (de) params.set("de", de);
-    if (ate) params.set("ate", ate);
     if (statusPedido !== "todos") params.set("status", statusPedido);
     fetch(`/api/pedidos?${params.toString()}`)
       .then((r) => r.json())
@@ -92,10 +87,27 @@ export default function FinanceiroPage() {
         setCarregando(false);
       })
       .catch(() => setCarregando(false));
-  }, [periodo, deCustom, ateCustom, statusPedido]);
+  }, [statusPedido]);
 
   const clientes = useMemo(() => {
-    let grupos = agruparPorCliente(pedidos, statusPedido !== "todos");
+    // período com base na data de criação do pedido, não na entrega —
+    // um pedido com entrega futura não pode "sumir" do financeiro
+    const { de, ate } = periodo === "custom"
+      ? { de: deCustom || null, ate: ateCustom || null }
+      : calcularPeriodo(periodo);
+
+    let pedidosNoPeriodo = pedidos;
+    if (de || ate) {
+      pedidosNoPeriodo = pedidos.filter((p) => {
+        if (!p.criado_em) return false;
+        const dataCriacao = p.criado_em.slice(0, 10);
+        if (de && dataCriacao < de) return false;
+        if (ate && dataCriacao > ate) return false;
+        return true;
+      });
+    }
+
+    let grupos = agruparPorCliente(pedidosNoPeriodo, statusPedido !== "todos");
 
     if (busca.trim()) {
       const termo = busca.trim().toLowerCase();
@@ -106,7 +118,7 @@ export default function FinanceiroPage() {
     if (statusFiltro === "quitado") grupos = grupos.filter((g) => g.emAberto <= 0.01);
 
     return grupos;
-  }, [pedidos, busca, statusFiltro, statusPedido]);
+  }, [pedidos, busca, statusFiltro, statusPedido, periodo, deCustom, ateCustom]);
 
   const totais = useMemo(
     () =>

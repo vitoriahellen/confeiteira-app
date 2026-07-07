@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Modal from "@/components/Modal";
 import ClienteForm from "@/components/ClienteForm";
+import ProdutoForm from "@/components/ProdutoForm";
 
 const STATUS_OPTIONS = [
   { value: "novo", label: "Novo" },
@@ -91,6 +92,9 @@ export default function PedidoForm({ inicial, onSubmit, enviando, textoBotao }) 
   const [produtos, setProdutos] = useState([]);
   const [produtoSelecionado, setProdutoSelecionado] = useState("");
   const [qtdProduto, setQtdProduto] = useState("1");
+  const [modalProdutoAberto, setModalProdutoAberto] = useState(false);
+  const [enviandoProduto, setEnviandoProduto] = useState(false);
+  const [erroProduto, setErroProduto] = useState("");
   const [itensCarrinho, setItensCarrinho] = useState(() => {
     if (!inicial?.itens) return [];
     const subtotalLegado =
@@ -117,6 +121,31 @@ export default function PedidoForm({ inicial, onSubmit, enviando, textoBotao }) 
     setErroItens("");
     setProdutoSelecionado("");
     setQtdProduto("1");
+  }
+
+  async function criarProdutoRapido(dadosProduto) {
+    setEnviandoProduto(true);
+    setErroProduto("");
+    try {
+      const res = await fetch("/api/produtos", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(dadosProduto),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setErroProduto(data.error || "Não foi possível criar o produto.");
+        setEnviandoProduto(false);
+        return;
+      }
+      setProdutos((atual) => [...atual, data.produto]);
+      setProdutoSelecionado(String(data.produto.id));
+      setEnviandoProduto(false);
+      setModalProdutoAberto(false);
+    } catch {
+      setErroProduto("Erro de conexão.");
+      setEnviandoProduto(false);
+    }
   }
 
   function removerItemCarrinho(id) {
@@ -221,22 +250,31 @@ export default function PedidoForm({ inicial, onSubmit, enviando, textoBotao }) 
         />
       </div>
 
-      <div className="card" style={{ padding: "0.9rem", background: "var(--brand-soft)", border: "none", display: "flex", gap: "0.6rem", alignItems: "flex-end", flexWrap: "wrap" }}>
-        <div style={{ flex: 1, minWidth: 180 }}>
-          <label className="label">Adicionar produto do catálogo</label>
-          <select className="input" value={produtoSelecionado} onChange={(e) => setProdutoSelecionado(e.target.value)}>
-            <option value="">Selecione um produto...</option>
-            {produtos.map((p) => (
-              <option key={p.id} value={p.id}>{p.nome} — R$ {Number(p.preco_padrao).toFixed(2)} / {p.unidade}</option>
-            ))}
-          </select>
+      <div className="card" style={{ padding: "0.9rem", background: "var(--brand-soft)", border: "none", display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+        <div style={{ display: "flex", gap: "0.6rem", alignItems: "flex-end", flexWrap: "wrap" }}>
+          <div style={{ flex: 1, minWidth: 180 }}>
+            <label className="label">Adicionar produto do catálogo</label>
+            <select className="input" value={produtoSelecionado} onChange={(e) => setProdutoSelecionado(e.target.value)}>
+              <option value="">Selecione um produto...</option>
+              {produtos.map((p) => (
+                <option key={p.id} value={p.id}>{p.nome} — R$ {Number(p.preco_padrao).toFixed(2)} / {p.unidade}</option>
+              ))}
+            </select>
+          </div>
+          <div style={{ width: 90 }}>
+            <label className="label">Qtd.</label>
+            <input className="input" type="number" min="1" step="1" value={qtdProduto} onChange={(e) => setQtdProduto(e.target.value)} />
+          </div>
+          <button type="button" className="btn btn-outline" onClick={adicionarProdutoDoCatalogo} disabled={!produtoSelecionado}>
+            + Adicionar
+          </button>
         </div>
-        <div style={{ width: 90 }}>
-          <label className="label">Qtd.</label>
-          <input className="input" type="number" min="1" step="1" value={qtdProduto} onChange={(e) => setQtdProduto(e.target.value)} />
-        </div>
-        <button type="button" className="btn btn-outline" onClick={adicionarProdutoDoCatalogo} disabled={!produtoSelecionado}>
-          + Adicionar
+        <button
+          type="button"
+          onClick={() => setModalProdutoAberto(true)}
+          style={{ alignSelf: "flex-start", border: "none", background: "transparent", color: "var(--accent-dark)", fontWeight: 600, fontSize: "0.85rem", cursor: "pointer", padding: "0.2rem 0" }}
+        >
+          + Não achou? Incluir novo produto
         </button>
       </div>
 
@@ -363,6 +401,17 @@ export default function PedidoForm({ inicial, onSubmit, enviando, textoBotao }) 
           onSubmit={criarClienteRapido}
           enviando={enviandoCliente}
           textoBotao="Adicionar cliente"
+        />
+      </Modal>
+    )}
+
+    {modalProdutoAberto && (
+      <Modal titulo="Incluir produto" onClose={() => setModalProdutoAberto(false)}>
+        {erroProduto && <p style={{ color: "#b23b3b", marginBottom: "0.8rem" }}>{erroProduto}</p>}
+        <ProdutoForm
+          onSubmit={criarProdutoRapido}
+          enviando={enviandoProduto}
+          textoBotao="Adicionar produto"
         />
       </Modal>
     )}
