@@ -244,10 +244,13 @@ export default function PedidoForm({ inicial, onSubmit, enviando, textoBotao }) 
         <label className="label">WhatsApp da cliente (com DDD)</label>
         <input
           className="input"
-          placeholder="Ex: 19999999999"
+          placeholder="Ex: 5519999999999"
           value={form.cliente_telefone}
           onChange={(e) => campo("cliente_telefone", e.target.value)}
         />
+        <p style={{ fontSize: "0.75rem", color: "var(--ink-soft)", marginTop: "0.25rem" }}>
+          Se digitar só DDD + número, o 55 (Brasil) é adicionado automaticamente ao enviar.
+        </p>
       </div>
 
       <div className="card" style={{ padding: "0.9rem", background: "var(--brand-soft)", border: "none", display: "flex", flexDirection: "column", gap: "0.5rem" }}>

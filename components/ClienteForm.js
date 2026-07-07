@@ -31,10 +31,13 @@ export default function ClienteForm({ inicial, onSubmit, enviando, textoBotao })
         <label className="label">WhatsApp (com DDD)</label>
         <input
           className="input"
-          placeholder="Ex: 19999999999"
+          placeholder="Ex: 5519999999999"
           value={form.telefone}
           onChange={(e) => campo("telefone", e.target.value)}
         />
+        <p style={{ fontSize: "0.78rem", color: "var(--ink-soft)", marginTop: "0.3rem" }}>
+          Se digitar só DDD + número, o 55 (Brasil) é adicionado automaticamente ao enviar.
+        </p>
       </div>
 
       <div>
