@@ -11,6 +11,7 @@ export default function ConfiguracoesPage() {
   const [salvo, setSalvo] = useState(false);
 
   const [logoUrl, setLogoUrl] = useState("");
+  const [nomeArquivoLogo, setNomeArquivoLogo] = useState("");
   const [salvandoLogo, setSalvandoLogo] = useState(false);
   const [erroLogo, setErroLogo] = useState("");
 
@@ -51,6 +52,7 @@ export default function ConfiguracoesPage() {
       return;
     }
     setErroLogo("");
+    setNomeArquivoLogo(arquivo.name);
     const leitor = new FileReader();
     leitor.onload = () => setLogoUrl(leitor.result);
     leitor.readAsDataURL(arquivo);
@@ -91,7 +93,21 @@ export default function ConfiguracoesPage() {
           <Logo variant="sidebar" logoUrl={logoUrl} />
         </div>
         <label className="label">Enviar uma imagem (até 1MB)</label>
-        <input type="file" accept="image/*" onChange={handleArquivoLogo} style={{ marginBottom: "0.6rem" }} />
+        <div style={{ position: "relative", display: "flex", alignItems: "center", gap: "0.7rem", marginBottom: "0.6rem" }}>
+          <label className="btn btn-outline" htmlFor="logo-upload" style={{ cursor: "pointer" }}>
+            Escolher imagem
+          </label>
+          <input
+            id="logo-upload"
+            type="file"
+            accept="image/*"
+            onChange={handleArquivoLogo}
+            style={{ position: "absolute", width: 1, height: 1, opacity: 0, overflow: "hidden" }}
+          />
+          <span style={{ fontSize: "0.85rem", color: "var(--ink-soft)" }}>
+            {nomeArquivoLogo || "Nenhum arquivo escolhido"}
+          </span>
+        </div>
         {erroLogo && <p style={{ color: "#b23b3b", fontSize: "0.85rem", marginBottom: "0.6rem" }}>{erroLogo}</p>}
         <div style={{ display: "flex", gap: "0.6rem" }}>
           <button
