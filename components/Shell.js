@@ -7,6 +7,7 @@ import Logo from "@/components/Logo";
 const LINKS = [
   { href: "/dashboard", label: "Agenda", icon: "📅" },
   { href: "/pedidos", label: "Pedidos", icon: "🧁" },
+  { href: "/financeiro", label: "Financeiro", icon: "💰" },
   { href: "/usuarios", label: "Usuárias", icon: "👥", adminOnly: true },
   { href: "/configuracoes", label: "Configurações", icon: "⚙️", adminOnly: true },
 ];
@@ -98,7 +99,7 @@ export default function Shell({ user, children }) {
         </div>
       </aside>
 
-      <main style={{ flex: 1, padding: "2rem 2.4rem", maxWidth: 1100 }}>{children}</main>
+      <main style={{ flex: 1, padding: "2rem 2.4rem", maxWidth: 1360 }}>{children}</main>
     </div>
   );
 }

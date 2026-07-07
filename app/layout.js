@@ -1,15 +1,8 @@
-import { Fraunces, Inter, IBM_Plex_Mono, Dancing_Script } from "next/font/google";
+import { Poppins, IBM_Plex_Mono, Dancing_Script } from "next/font/google";
 import "./globals.css";
 
-const fraunces = Fraunces({
-  variable: "--font-fraunces",
-  subsets: ["latin"],
-  weight: ["500", "600", "700"],
-  style: ["normal", "italic"],
-});
-
-const inter = Inter({
-  variable: "--font-inter",
+const poppins = Poppins({
+  variable: "--font-poppins",
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
 });
@@ -35,7 +28,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="pt-BR">
       <body
-        className={`${fraunces.variable} ${inter.variable} ${plexMono.variable} ${dancingScript.variable}`}
+        className={`${poppins.variable} ${plexMono.variable} ${dancingScript.variable}`}
       >
         {children}
       </body>

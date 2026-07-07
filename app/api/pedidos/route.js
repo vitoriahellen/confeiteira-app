@@ -18,21 +18,26 @@ export async function GET(request) {
 
   if (de) {
     valores.push(de);
-    condicoes.push(`data_entrega >= $${valores.length}`);
+    condicoes.push(`p.data_entrega >= $${valores.length}`);
   }
   if (ate) {
     valores.push(ate);
-    condicoes.push(`data_entrega <= $${valores.length}`);
+    condicoes.push(`p.data_entrega <= $${valores.length}`);
   }
   if (status) {
     valores.push(status);
-    condicoes.push(`status = $${valores.length}`);
+    condicoes.push(`p.status = $${valores.length}`);
   }
 
   const where = condicoes.length ? `WHERE ${condicoes.join(" AND ")}` : "";
 
   const result = await query(
-    `SELECT * FROM pedidos ${where} ORDER BY data_entrega ASC, id ASC`,
+    `SELECT p.*, COALESCE(array_agg(l.tipo) FILTER (WHERE l.tipo IS NOT NULL), '{}') AS lembretes_enviados
+     FROM pedidos p
+     LEFT JOIN lembretes_enviados l ON l.pedido_id = p.id
+     ${where}
+     GROUP BY p.id
+     ORDER BY p.data_entrega ASC, p.id ASC`,
     valores
   );
 

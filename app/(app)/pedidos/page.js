@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { format } from "date-fns";
+import Kanban from "@/components/Kanban";
+import { listarLembretes, porPedido } from "@/lib/lembretes";
 
 const STATUS_LABEL = {
   novo: "Novo",
@@ -16,6 +18,7 @@ export default function PedidosPage() {
   const [pedidos, setPedidos] = useState([]);
   const [carregando, setCarregando] = useState(true);
   const [filtroStatus, setFiltroStatus] = useState("");
+  const [visualizacao, setVisualizacao] = useState("kanban"); // 'kanban' | 'lista'
 
   useEffect(() => {
     carregar();
@@ -32,9 +35,34 @@ export default function PedidosPage() {
       .catch(() => setCarregando(false));
   }
 
+  async function atualizarPedido(id, campos) {
+    const anterior = pedidos;
+    setPedidos((atual) => atual.map((p) => (p.id === id ? { ...p, ...campos } : p)));
+    try {
+      const res = await fetch(`/api/pedidos/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(campos),
+      });
+      if (!res.ok) throw new Error("falha ao salvar");
+    } catch {
+      setPedidos(anterior);
+    }
+  }
+
+  function handleStatusChange(id, novoStatus) {
+    atualizarPedido(id, { status: novoStatus });
+  }
+
+  function handleTogglePagamento(id, campo, valorAtual) {
+    atualizarPedido(id, { [campo]: !valorAtual });
+  }
+
   const filtrados = filtroStatus
     ? pedidos.filter((p) => p.status === filtroStatus)
     : pedidos;
+
+  const lembretesPorPedido = porPedido(listarLembretes(pedidos));
 
   return (
     <div>
@@ -43,18 +71,55 @@ export default function PedidosPage() {
           <p className="label" style={{ color: "var(--accent)" }}>Pedidos</p>
           <h1 className="display" style={{ fontSize: "1.8rem", margin: 0 }}>Todas as encomendas</h1>
         </div>
-        <Link href="/pedidos/novo" className="btn btn-primary">+ Novo pedido</Link>
+        <div style={{ display: "flex", gap: "0.5rem" }}>
+          <div className="card" style={{ display: "flex", padding: 4 }}>
+            <button
+              onClick={() => setVisualizacao("kanban")}
+              className="btn"
+              style={{
+                background: visualizacao === "kanban" ? "var(--accent)" : "transparent",
+                color: visualizacao === "kanban" ? "#fff" : "var(--ink-soft)",
+                padding: "0.4rem 0.9rem",
+              }}
+            >
+              Kanban
+            </button>
+            <button
+              onClick={() => setVisualizacao("lista")}
+              className="btn"
+              style={{
+                background: visualizacao === "lista" ? "var(--accent)" : "transparent",
+                color: visualizacao === "lista" ? "#fff" : "var(--ink-soft)",
+                padding: "0.4rem 0.9rem",
+              }}
+            >
+              Lista
+            </button>
+          </div>
+          <Link href="/pedidos/novo" className="btn btn-primary">+ Novo pedido</Link>
+        </div>
       </header>
 
-      <div style={{ display: "flex", gap: "0.4rem", marginBottom: "1.2rem", flexWrap: "wrap" }}>
-        <FiltroBotao label="Todos" ativo={filtroStatus === ""} onClick={() => setFiltroStatus("")} />
-        {Object.entries(STATUS_LABEL).map(([valor, label]) => (
-          <FiltroBotao key={valor} label={label} ativo={filtroStatus === valor} onClick={() => setFiltroStatus(valor)} />
-        ))}
-      </div>
+      {visualizacao === "lista" && (
+        <div style={{ display: "flex", gap: "0.4rem", marginBottom: "1.2rem", flexWrap: "wrap" }}>
+          <FiltroBotao label="Todos" ativo={filtroStatus === ""} onClick={() => setFiltroStatus("")} />
+          {Object.entries(STATUS_LABEL).map(([valor, label]) => (
+            <FiltroBotao key={valor} label={label} ativo={filtroStatus === valor} onClick={() => setFiltroStatus(valor)} />
+          ))}
+        </div>
+      )}
 
       {carregando ? (
         <p style={{ color: "var(--ink-soft)" }}>Carregando pedidos...</p>
+      ) : pedidos.length === 0 ? (
+        <p style={{ color: "var(--ink-soft)" }}>Nenhum pedido encontrado.</p>
+      ) : visualizacao === "kanban" ? (
+        <Kanban
+          pedidos={pedidos}
+          lembretesPorPedido={lembretesPorPedido}
+          onStatusChange={handleStatusChange}
+          onTogglePagamento={handleTogglePagamento}
+        />
       ) : filtrados.length === 0 ? (
         <p style={{ color: "var(--ink-soft)" }}>Nenhum pedido encontrado.</p>
       ) : (

@@ -16,6 +16,8 @@ import {
   isToday,
 } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { listarLembretes, formatarDataRelativa, linkWhatsApp, mensagemPadrao } from "@/lib/lembretes";
+import CartaoKpi from "@/components/CartaoKpi";
 
 const STATUS_LABEL = {
   novo: "Novo",
@@ -39,6 +41,7 @@ export default function DashboardPage() {
   const [carregando, setCarregando] = useState(true);
   const [diaSelecionado, setDiaSelecionado] = useState(null);
   const [usuario, setUsuario] = useState(null);
+  const [periodoDias, setPeriodoDias] = useState(30);
 
   useEffect(() => {
     setCarregando(true);
@@ -87,6 +90,38 @@ export default function DashboardPage() {
     ? pedidosPorDia[format(diaSelecionado, "yyyy-MM-dd")] || []
     : [];
 
+  const kpis = useMemo(() => {
+    const hoje = new Date();
+    hoje.setHours(0, 0, 0, 0);
+    const inicio = new Date(hoje);
+    inicio.setDate(inicio.getDate() - (periodoDias - 1));
+
+    let totalPedidos = 0;
+    let aReceber = 0;
+    let recebido = 0;
+
+    for (const p of pedidos) {
+      if (p.status === "cancelado" || !p.data_entrega) continue;
+      const dataEntrega = new Date(p.data_entrega.slice(0, 10) + "T00:00:00");
+      if (dataEntrega < inicio || dataEntrega > hoje) continue;
+
+      totalPedidos += 1;
+      const sinal = Number(p.valor_sinal) || 0;
+      const restante = (Number(p.valor_total) || 0) - sinal;
+      if (p.sinal_pago) recebido += sinal;
+      else aReceber += sinal;
+      if (p.restante_pago) recebido += restante;
+      else aReceber += restante;
+    }
+
+    return { totalPedidos, aReceber, recebido };
+  }, [pedidos, periodoDias]);
+
+  const lembretesPendentes = useMemo(
+    () => listarLembretes(pedidos).filter((item) => !item.enviado).slice(0, 6),
+    [pedidos]
+  );
+
   return (
     <div>
       {usuario?.nome && (
@@ -100,6 +135,35 @@ export default function DashboardPage() {
         </div>
       )}
 
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.8rem" }}>
+        <p className="label" style={{ color: "var(--accent)", margin: 0 }}>Resumo do período</p>
+        <div className="card" style={{ display: "flex", padding: 4 }}>
+          {[7, 30, 60].map((dias) => (
+            <button
+              key={dias}
+              onClick={() => setPeriodoDias(dias)}
+              className="btn"
+              style={{
+                background: periodoDias === dias ? "var(--accent)" : "transparent",
+                color: periodoDias === dias ? "#fff" : "var(--ink-soft)",
+                padding: "0.35rem 0.8rem",
+                fontSize: "0.82rem",
+              }}
+            >
+              {dias} dias
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "0.9rem", marginBottom: "1.8rem" }}>
+        <CartaoKpi icone="🧁" cor="var(--brand-soft)" corIcone="var(--brand)" label="Pedidos no período" valor={kpis.totalPedidos} />
+        <CartaoKpi icone="⏳" cor="var(--purple-bg)" corIcone="var(--purple)" label="A receber" valor={`R$ ${kpis.aReceber.toFixed(2)}`} />
+        <CartaoKpi icone="✅" cor="var(--sage-bg)" corIcone="var(--sage)" label="Recebido" valor={`R$ ${kpis.recebido.toFixed(2)}`} />
+      </div>
+
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 300px", gap: "1.6rem", alignItems: "start" }}>
+      <div>
       <header style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: "1.6rem" }}>
         <div>
           <p className="label" style={{ color: "var(--accent)" }}>Agenda</p>
@@ -240,6 +304,69 @@ export default function DashboardPage() {
               )}
             </div>
           )}
+        </div>
+      )}
+      </div>
+
+      <PainelLembretes itens={lembretesPendentes} />
+      </div>
+    </div>
+  );
+}
+
+function PainelLembretes({ itens }) {
+  return (
+    <div className="card" style={{ padding: "1.1rem" }}>
+      <h3 className="display" style={{ fontSize: "1.05rem", margin: "0 0 0.9rem" }}>🔔 Próximos lembretes</h3>
+      {itens.length === 0 ? (
+        <p style={{ color: "var(--ink-soft)", fontSize: "0.85rem" }}>Nenhum lembrete pendente.</p>
+      ) : (
+        <div style={{ display: "flex", flexDirection: "column", gap: "0.6rem" }}>
+          {itens.map((item) => {
+            const link = linkWhatsApp(item.telefone, mensagemPadrao(item));
+            return (
+              <div
+                key={`${item.pedidoId}-${item.tipo}`}
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  gap: "0.6rem",
+                  padding: "0.6rem 0.7rem",
+                  background: "var(--brand-soft)",
+                  borderRadius: 12,
+                }}
+              >
+                <div>
+                  <div style={{ fontSize: "0.85rem", fontWeight: 600 }}>{item.texto}</div>
+                  <div style={{ fontSize: "0.75rem", color: "var(--ink-soft)" }}>{formatarDataRelativa(item.data)}</div>
+                </div>
+                {link && (
+                  <a
+                    href={link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    title="Enviar lembrete pelo WhatsApp"
+                    style={{
+                      width: 30,
+                      height: 30,
+                      borderRadius: "50%",
+                      background: "var(--sage)",
+                      color: "#fff",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      flexShrink: 0,
+                      fontSize: "0.9rem",
+                      textDecoration: "none",
+                    }}
+                  >
+                    ✆
+                  </a>
+                )}
+              </div>
+            );
+          })}
         </div>
       )}
     </div>

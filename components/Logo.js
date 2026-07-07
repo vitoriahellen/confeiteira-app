@@ -78,8 +78,13 @@ export default function Logo({ variant = "sidebar" }) {
       </div>
       <div style={{ lineHeight: 1.05 }}>
         <p
-          className="display"
-          style={{ fontSize: "1.15rem", margin: 0, color: "var(--brand)" }}
+          style={{
+            fontFamily: "var(--font-script)",
+            fontWeight: 700,
+            fontSize: "1.35rem",
+            margin: 0,
+            color: "var(--brand)",
+          }}
         >
           Casa do Bolo
         </p>
