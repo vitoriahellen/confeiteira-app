@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Modal from "@/components/Modal";
 import ClienteForm from "@/components/ClienteForm";
 
@@ -12,13 +12,17 @@ const STATUS_OPTIONS = [
   { value: "cancelado", label: "Cancelado" },
 ];
 
+function linhaTexto(item) {
+  return item.legado ? item.nome : `${item.quantidade}x ${item.nome}`;
+}
+
 export default function PedidoForm({ inicial, onSubmit, enviando, textoBotao }) {
   const [form, setForm] = useState({
     cliente_nome: inicial?.cliente_nome || "",
     cliente_telefone: inicial?.cliente_telefone || "",
     itens: inicial?.itens || "",
-    valor_total: inicial?.valor_total ?? "",
-    valor_sinal: inicial?.valor_sinal ?? "",
+    valor_total: inicial?.valor_total ?? "0",
+    valor_sinal: inicial?.valor_sinal ?? "0",
     sinal_pago: inicial?.sinal_pago ?? false,
     restante_pago: inicial?.restante_pago ?? false,
     desconto: inicial?.desconto ?? "0",
@@ -29,6 +33,8 @@ export default function PedidoForm({ inicial, onSubmit, enviando, textoBotao }) 
     status: inicial?.status || "novo",
     observacoes: inicial?.observacoes || "",
   });
+  const [erroItens, setErroItens] = useState("");
+  const [sinalEditadoManualmente, setSinalEditadoManualmente] = useState(Boolean(inicial));
 
   // --- cliente cadastrado ---
   const [clientes, setClientes] = useState([]);
@@ -81,10 +87,16 @@ export default function PedidoForm({ inicial, onSubmit, enviando, textoBotao }) 
     }
   }
 
-  // --- produtos do catálogo ---
+  // --- carrinho de produtos do catálogo (substitui o texto livre de itens) ---
   const [produtos, setProdutos] = useState([]);
   const [produtoSelecionado, setProdutoSelecionado] = useState("");
   const [qtdProduto, setQtdProduto] = useState("1");
+  const [itensCarrinho, setItensCarrinho] = useState(() => {
+    if (!inicial?.itens) return [];
+    const subtotalLegado =
+      (Number(inicial.valor_total) || 0) + (Number(inicial.desconto) || 0) - (Number(inicial.acrescimo) || 0);
+    return [{ id: "legado", nome: inicial.itens, quantidade: 1, precoUnitario: subtotalLegado, subtotal: subtotalLegado, legado: true }];
+  });
 
   useEffect(() => {
     fetch("/api/produtos")
@@ -97,38 +109,59 @@ export default function PedidoForm({ inicial, onSubmit, enviando, textoBotao }) 
     const produto = produtos.find((p) => String(p.id) === produtoSelecionado);
     if (!produto) return;
     const qtd = Number(qtdProduto) || 1;
-    const totalLinha = qtd * Number(produto.preco_padrao);
-    const linhaTexto = `${qtd}x ${produto.nome} (R$ ${totalLinha.toFixed(2)})`;
-    setForm((f) => ({
-      ...f,
-      itens: f.itens ? `${f.itens}\n${linhaTexto}` : linhaTexto,
-      valor_total: (Number(f.valor_total) || 0) + totalLinha,
-    }));
+    const precoUnitario = Number(produto.preco_padrao);
+    setItensCarrinho((atual) => [
+      ...atual,
+      { id: `${produto.id}-${Date.now()}`, nome: produto.nome, quantidade: qtd, precoUnitario, subtotal: qtd * precoUnitario },
+    ]);
+    setErroItens("");
     setProdutoSelecionado("");
     setQtdProduto("1");
   }
 
-  function alterarDesconto(novoValor) {
-    const delta = (Number(form.desconto) || 0) - (Number(novoValor) || 0);
-    setForm((f) => ({ ...f, desconto: novoValor, valor_total: (Number(f.valor_total) || 0) + delta }));
+  function removerItemCarrinho(id) {
+    setItensCarrinho((atual) => atual.filter((i) => i.id !== id));
   }
 
-  function alterarAcrescimo(novoValor) {
-    const delta = (Number(novoValor) || 0) - (Number(form.acrescimo) || 0);
-    setForm((f) => ({ ...f, acrescimo: novoValor, valor_total: (Number(f.valor_total) || 0) + delta }));
-  }
+  const subtotalCarrinho = useMemo(
+    () => itensCarrinho.reduce((acc, i) => acc + i.subtotal, 0),
+    [itensCarrinho]
+  );
+
+  const valorTotalComputado = useMemo(
+    () => Math.max(0, subtotalCarrinho - (Number(form.desconto) || 0) + (Number(form.acrescimo) || 0)),
+    [subtotalCarrinho, form.desconto, form.acrescimo]
+  );
+
+  // mantém itens (texto) e valor_total em sincronia com o carrinho e desconto/acréscimo
+  useEffect(() => {
+    const itensTexto = itensCarrinho.map(linhaTexto).join("\n");
+    setForm((f) => ({ ...f, itens: itensTexto, valor_total: valorTotalComputado.toFixed(2) }));
+  }, [itensCarrinho, valorTotalComputado]);
+
+  // sinal sugerido em 50% do total, editável manualmente
+  useEffect(() => {
+    if (sinalEditadoManualmente) return;
+    setForm((f) => ({ ...f, valor_sinal: (valorTotalComputado * 0.5).toFixed(2) }));
+  }, [valorTotalComputado, sinalEditadoManualmente]);
 
   function campo(name, value) {
     setForm((f) => ({ ...f, [name]: value }));
   }
 
+  function handleSubmit(e) {
+    e.preventDefault();
+    if (itensCarrinho.length === 0) {
+      setErroItens("Adicione ao menos um produto do catálogo.");
+      return;
+    }
+    onSubmit(form);
+  }
+
   return (
     <>
     <form
-      onSubmit={(e) => {
-        e.preventDefault();
-        onSubmit(form);
-      }}
+      onSubmit={handleSubmit}
       className="card"
       style={{ padding: "1.8rem", display: "flex", flexDirection: "column", gap: "1rem", maxWidth: 640 }}
     >
@@ -209,35 +242,71 @@ export default function PedidoForm({ inicial, onSubmit, enviando, textoBotao }) 
 
       <div>
         <label className="label">Itens do pedido</label>
-        <textarea
-          className="input"
-          required
-          rows={3}
-          value={form.itens}
-          onChange={(e) => campo("itens", e.target.value)}
-          placeholder="Ex: Bolo de chocolate 2kg + 30 docinhos"
-        />
+        {itensCarrinho.length === 0 ? (
+          <p style={{ color: "var(--ink-soft)", fontSize: "0.88rem", margin: "0.3rem 0" }}>
+            Nenhum item adicionado ainda. Escolha um produto do catálogo acima.
+          </p>
+        ) : (
+          <div className="card" style={{ padding: "0.5rem 0.8rem", display: "flex", flexDirection: "column", gap: "0.4rem" }}>
+            {itensCarrinho.map((item) => (
+              <div key={item.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: "0.9rem", padding: "0.3rem 0" }}>
+                <span>{linhaTexto(item)}</span>
+                <div style={{ display: "flex", alignItems: "center", gap: "0.7rem" }}>
+                  <span className="mono">R$ {item.subtotal.toFixed(2)}</span>
+                  <button
+                    type="button"
+                    onClick={() => removerItemCarrinho(item.id)}
+                    aria-label="Remover item"
+                    style={{ border: "none", background: "transparent", color: "#b23b3b", cursor: "pointer", fontSize: "1rem", lineHeight: 1 }}
+                  >
+                    ✕
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+        {erroItens && <p style={{ color: "#b23b3b", fontSize: "0.85rem", marginTop: "0.4rem" }}>{erroItens}</p>}
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
         <div>
           <label className="label">Valor total (R$)</label>
-          <input className="input" type="number" step="0.01" min="0" required value={form.valor_total} onChange={(e) => campo("valor_total", e.target.value)} />
+          <input
+            className="input"
+            type="number"
+            step="0.01"
+            value={form.valor_total}
+            readOnly
+            title="Calculado a partir dos itens, desconto e acréscimo"
+            style={{ background: "#f5eef1", cursor: "not-allowed" }}
+          />
         </div>
         <div>
           <label className="label">Valor do sinal (R$)</label>
-          <input className="input" type="number" step="0.01" min="0" value={form.valor_sinal} onChange={(e) => campo("valor_sinal", e.target.value)} />
+          <input
+            className="input"
+            type="number"
+            step="0.01"
+            min="0"
+            value={form.valor_sinal}
+            onChange={(e) => {
+              setSinalEditadoManualmente(true);
+              campo("valor_sinal", e.target.value);
+            }}
+          />
+          <p style={{ fontSize: "0.75rem", color: "var(--ink-soft)", marginTop: "0.25rem" }}>Sugerido: 50% do valor total.</p>
         </div>
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
         <div>
           <label className="label">Desconto (R$)</label>
-          <input className="input" type="number" step="0.01" min="0" value={form.desconto} onChange={(e) => alterarDesconto(e.target.value)} />
+          <input className="input" type="number" step="0.01" min="0" value={form.desconto} onChange={(e) => campo("desconto", e.target.value)} />
         </div>
         <div>
           <label className="label">Acréscimo (R$)</label>
-          <input className="input" type="number" step="0.01" min="0" value={form.acrescimo} onChange={(e) => alterarAcrescimo(e.target.value)} />
+          <input className="input" type="number" step="0.01" min="0" value={form.acrescimo} onChange={(e) => campo("acrescimo", e.target.value)} />
         </div>
       </div>
 
