@@ -66,12 +66,12 @@ export default function PedidosPage() {
 
   return (
     <div>
-      <header style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: "1.6rem" }}>
+      <header style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: "1.6rem", flexWrap: "wrap", gap: "0.6rem" }}>
         <div>
           <p className="label" style={{ color: "var(--accent)" }}>Pedidos</p>
           <h1 className="display" style={{ fontSize: "1.8rem", margin: 0 }}>Todas as encomendas</h1>
         </div>
-        <div style={{ display: "flex", gap: "0.5rem" }}>
+        <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
           <div className="card" style={{ display: "flex", padding: 4 }}>
             <button
               onClick={() => setVisualizacao("kanban")}
@@ -128,11 +128,10 @@ export default function PedidosPage() {
             <Link
               key={p.id}
               href={`/pedidos/${p.id}`}
-              className="index-card"
-              style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "1rem" }}
+              className="index-card index-card-row"
             >
-              <div style={{ flex: 1 }}>
-                <div style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", flexWrap: "wrap" }}>
                   <strong>{p.cliente_nome}</strong>
                   <span className={`badge badge-${p.status}`}>{STATUS_LABEL[p.status]}</span>
                 </div>

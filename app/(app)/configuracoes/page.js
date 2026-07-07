@@ -98,7 +98,7 @@ export default function ConfiguracoesPage() {
           <Logo variant="sidebar" logoUrl={logoUrl} />
         </div>
         <label className="label">Enviar uma imagem (até 1MB)</label>
-        <div style={{ position: "relative", display: "flex", alignItems: "center", gap: "0.7rem", marginBottom: "0.6rem" }}>
+        <div style={{ position: "relative", display: "flex", alignItems: "center", gap: "0.7rem", marginBottom: "0.6rem", flexWrap: "wrap" }}>
           <label className="btn btn-outline" htmlFor="logo-upload" style={{ cursor: "pointer" }}>
             Escolher imagem
           </label>

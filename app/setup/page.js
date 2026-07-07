@@ -74,7 +74,7 @@ export default function SetupPage() {
   return (
     <Centro>
       <Logo variant="stacked" />
-      <form onSubmit={handleSubmit} className="card" style={{ padding: "2.2rem", width: 400 }}>
+      <form onSubmit={handleSubmit} className="card" style={{ padding: "2.2rem", width: "100%", maxWidth: 400 }}>
         <p className="label" style={{ color: "var(--accent)" }}>Configuração inicial</p>
         <h1 className="display" style={{ fontSize: "1.6rem", marginBottom: "0.3rem" }}>
           Crie sua conta de administradora

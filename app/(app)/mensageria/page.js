@@ -53,7 +53,7 @@ export default function MensageriaPage() {
         sistema verifica tudo automaticamente 1x por dia, às 09h (horário de Brasília).
       </p>
 
-      <div style={{ display: "flex", gap: "0.4rem", marginBottom: "1.2rem" }}>
+      <div style={{ display: "flex", gap: "0.4rem", marginBottom: "1.2rem", flexWrap: "wrap" }}>
         <FiltroBotao label={`Pendentes (${pendentesCount})`} ativo={filtro === "pendentes"} onClick={() => setFiltro("pendentes")} />
         <FiltroBotao label="Enviados" ativo={filtro === "enviados"} onClick={() => setFiltro("enviados")} />
         <FiltroBotao label="Todos" ativo={filtro === "todos"} onClick={() => setFiltro("todos")} />
@@ -72,7 +72,7 @@ export default function MensageriaPage() {
               <div
                 key={`${item.pedidoId}-${item.tipo}`}
                 className="index-card"
-                style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "1rem" }}
+                style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "1rem", flexWrap: "wrap" }}
               >
                 <div style={{ display: "flex", alignItems: "center", gap: "0.8rem", flex: 1, minWidth: 0 }}>
                   <span className="badge" style={{ background: rotulo.fundo, color: rotulo.cor, flexShrink: 0 }}>

@@ -307,7 +307,7 @@ export default function PedidoForm({ inicial, onSubmit, enviando, textoBotao }) 
         {erroItens && <p style={{ color: "#b23b3b", fontSize: "0.85rem", marginTop: "0.4rem" }}>{erroItens}</p>}
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
+      <div className="grid-2">
         <div>
           <label className="label">Valor total (R$)</label>
           <input
@@ -337,7 +337,7 @@ export default function PedidoForm({ inicial, onSubmit, enviando, textoBotao }) 
         </div>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
+      <div className="grid-2">
         <div>
           <label className="label">Desconto (R$)</label>
           <input className="input" type="number" step="0.01" min="0" value={form.desconto} onChange={(e) => campo("desconto", e.target.value)} />
@@ -348,7 +348,7 @@ export default function PedidoForm({ inicial, onSubmit, enviando, textoBotao }) 
         </div>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "1rem" }}>
+      <div className="grid-3">
         <div>
           <label className="label">Data de entrega</label>
           <input className="input" type="date" required value={form.data_entrega} onChange={(e) => campo("data_entrega", e.target.value)} />

@@ -64,7 +64,7 @@ export default function UsuariosPage() {
       <p className="label" style={{ color: "var(--accent)" }}>Equipe</p>
       <h1 className="display" style={{ fontSize: "1.8rem", marginBottom: "1.4rem" }}>Usuárias do sistema</h1>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1.3fr", gap: "1.6rem", alignItems: "start" }}>
+      <div className="grid-form-list">
         <form onSubmit={handleSubmit} className="card" style={{ padding: "1.6rem", display: "flex", flexDirection: "column", gap: "0.9rem" }}>
           <h3 className="display" style={{ fontSize: "1.1rem", margin: 0 }}>Adicionar usuária</h3>
           <div>
@@ -98,8 +98,8 @@ export default function UsuariosPage() {
           ) : (
             <div style={{ display: "flex", flexDirection: "column", gap: "0.6rem" }}>
               {usuarios.map((u) => (
-                <div key={u.id} className="card" style={{ padding: "0.9rem 1.1rem", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <div>
+                <div key={u.id} className="card" style={{ padding: "0.9rem 1.1rem", display: "flex", justifyContent: "space-between", alignItems: "center", gap: "0.8rem", flexWrap: "wrap" }}>
+                  <div style={{ minWidth: 0 }}>
                     <strong>{u.nome}</strong>{" "}
                     <span className="badge" style={{ background: u.papel === "admin" ? "var(--purple-bg)" : "var(--sage-bg)", color: u.papel === "admin" ? "var(--purple)" : "var(--sage)" }}>
                       {u.papel === "admin" ? "Admin" : "Membro"}

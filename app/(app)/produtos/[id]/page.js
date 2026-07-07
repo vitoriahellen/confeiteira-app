@@ -58,7 +58,7 @@ export default function ProdutoDetalhePage() {
   return (
     <div>
       <Link href="/produtos" style={{ fontSize: "0.85rem", color: "var(--ink-soft)" }}>← Voltar para produtos</Link>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginTop: "0.8rem", marginBottom: "1.2rem" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginTop: "0.8rem", marginBottom: "1.2rem", flexWrap: "wrap", gap: "0.6rem" }}>
         <div>
           <p className="label" style={{ color: "var(--accent)" }}>Produto</p>
           <h1 className="display" style={{ fontSize: "1.8rem", margin: 0 }}>{produto.nome}</h1>

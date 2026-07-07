@@ -21,6 +21,7 @@ export default function Shell({ user, children }) {
   const pathname = usePathname();
   const router = useRouter();
   const [logoUrl, setLogoUrl] = useState("");
+  const [menuAberto, setMenuAberto] = useState(false);
 
   useEffect(() => {
     fetch("/api/settings")
@@ -29,6 +30,10 @@ export default function Shell({ user, children }) {
       .catch(() => {});
   }, []);
 
+  useEffect(() => {
+    setMenuAberto(false);
+  }, [pathname]);
+
   async function sair() {
     await fetch("/api/auth/logout", { method: "POST" });
     router.push("/login");
@@ -36,8 +41,27 @@ export default function Shell({ user, children }) {
   }
 
   return (
-    <div style={{ display: "flex", minHeight: "100vh" }}>
+    <div className="app-shell">
+      <div className="mobile-topbar">
+        <button
+          onClick={() => setMenuAberto(true)}
+          aria-label="Abrir menu"
+          className="btn btn-outline"
+          style={{ padding: "0.5rem 0.7rem" }}
+        >
+          ☰
+        </button>
+        <Logo variant="sidebar" logoUrl={logoUrl} />
+        <div style={{ width: 40 }} />
+      </div>
+
+      <div
+        className={`app-sidebar-backdrop${menuAberto ? " open" : ""}`}
+        onClick={() => setMenuAberto(false)}
+      />
+
       <aside
+        className={`app-sidebar${menuAberto ? " open" : ""}`}
         style={{
           width: 232,
           flexShrink: 0,
@@ -112,8 +136,8 @@ export default function Shell({ user, children }) {
         </div>
       </aside>
 
-      <main style={{ flex: 1, padding: "2rem 2.4rem", maxWidth: 1360, display: "flex", flexDirection: "column" }}>
-        <div style={{ flex: 1 }}>{children}</div>
+      <main className="app-main" style={{ flex: 1, minWidth: 0, padding: "2rem 2.4rem", maxWidth: 1360, display: "flex", flexDirection: "column" }}>
+        <div style={{ flex: 1, minWidth: 0 }}>{children}</div>
         <Footer />
       </main>
     </div>

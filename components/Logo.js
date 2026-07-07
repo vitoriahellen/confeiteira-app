@@ -36,7 +36,7 @@ export default function Logo({ variant = "sidebar", logoUrl }) {
 
   if (variant === "stacked") {
     return (
-      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "0.6rem" }}>
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "0.6rem", maxWidth: "100%" }}>
         <div
           style={{
             display: "inline-flex",
@@ -45,11 +45,13 @@ export default function Logo({ variant = "sidebar", logoUrl }) {
             background: "var(--brand)",
             color: "#fff",
             borderRadius: 20,
-            padding: "1.4rem 2.2rem",
+            padding: "clamp(1rem, 4vw, 1.4rem) clamp(1.2rem, 6vw, 2.2rem)",
+            maxWidth: "100%",
+            boxSizing: "border-box",
           }}
         >
           <Cupcake size={32} />
-          <span style={{ fontFamily: "var(--font-script)", fontSize: "2.3rem", lineHeight: 1 }}>
+          <span style={{ fontFamily: "var(--font-script)", fontSize: "clamp(1.6rem, 8vw, 2.3rem)", lineHeight: 1, whiteSpace: "nowrap" }}>
             Doce Gestão
           </span>
         </div>

@@ -29,7 +29,7 @@ export default function ClientesPage() {
 
   return (
     <div>
-      <header style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: "1.6rem" }}>
+      <header style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: "1.6rem", flexWrap: "wrap", gap: "0.6rem" }}>
         <div>
           <p className="label" style={{ color: "var(--accent)" }}>Clientes</p>
           <h1 className="display" style={{ fontSize: "1.8rem", margin: 0 }}>Cadastro de clientes</h1>
@@ -42,7 +42,7 @@ export default function ClientesPage() {
         placeholder="Buscar por nome ou WhatsApp..."
         value={busca}
         onChange={(e) => setBusca(e.target.value)}
-        style={{ maxWidth: 320, marginBottom: "1.2rem" }}
+        style={{ maxWidth: 320, width: "100%", marginBottom: "1.2rem" }}
       />
 
       {carregando ? (
@@ -56,10 +56,9 @@ export default function ClientesPage() {
             return (
               <div
                 key={c.id}
-                className="index-card"
-                style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "1rem" }}
+                className="index-card index-card-row"
               >
-                <Link href={`/clientes/${c.id}`} style={{ flex: 1, display: "block" }}>
+                <Link href={`/clientes/${c.id}`} style={{ flex: 1, minWidth: 0, display: "block" }}>
                   <strong>{c.nome}</strong>
                   {c.endereco && (
                     <div style={{ color: "var(--ink-soft)", fontSize: "0.85rem", marginTop: "0.15rem" }}>

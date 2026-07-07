@@ -28,7 +28,7 @@ export default function ProdutosPage() {
 
   return (
     <div>
-      <header style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: "1.6rem" }}>
+      <header style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: "1.6rem", flexWrap: "wrap", gap: "0.6rem" }}>
         <div>
           <p className="label" style={{ color: "var(--accent)" }}>Produtos</p>
           <h1 className="display" style={{ fontSize: "1.8rem", margin: 0 }}>Catálogo de produtos</h1>
@@ -54,10 +54,9 @@ export default function ProdutosPage() {
             <Link
               key={p.id}
               href={`/produtos/${p.id}`}
-              className="index-card"
-              style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "1rem" }}
+              className="index-card index-card-row"
             >
-              <div>
+              <div style={{ minWidth: 0 }}>
                 <strong>{p.nome}</strong>
                 <span className="badge" style={{ background: "var(--brand-soft)", color: "var(--brand)", marginLeft: "0.5rem" }}>
                   {p.unidade}
@@ -66,7 +65,7 @@ export default function ProdutosPage() {
                   <div style={{ color: "var(--ink-soft)", fontSize: "0.85rem", marginTop: "0.15rem" }}>{p.descricao}</div>
                 )}
               </div>
-              <div className="mono" style={{ fontWeight: 600 }}>R$ {Number(p.preco_padrao).toFixed(2)}</div>
+              <div className="mono" style={{ fontWeight: 600, flexShrink: 0 }}>R$ {Number(p.preco_padrao).toFixed(2)}</div>
             </Link>
           ))}
         </div>

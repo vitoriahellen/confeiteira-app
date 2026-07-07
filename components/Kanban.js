@@ -25,14 +25,7 @@ export default function Kanban({ pedidos, lembretesPorPedido, onStatusChange, on
   }
 
   return (
-    <div
-      style={{
-        display: "grid",
-        gridTemplateColumns: `repeat(${COLUNAS.length}, minmax(0, 1fr))`,
-        gap: "0.9rem",
-        alignItems: "start",
-      }}
-    >
+    <div className="kanban-board" style={{ alignItems: "start" }}>
       {COLUNAS.map((coluna) => (
         <div
           key={coluna.status}

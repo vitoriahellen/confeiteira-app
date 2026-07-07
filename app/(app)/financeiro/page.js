@@ -165,13 +165,13 @@ export default function FinanceiroPage() {
             placeholder="Buscar cliente..."
             value={busca}
             onChange={(e) => setBusca(e.target.value)}
-            style={{ width: 200 }}
+            style={{ flex: "1 1 160px" }}
           />
           <select
             className="input"
             value={statusPedido}
             onChange={(e) => setStatusPedido(e.target.value)}
-            style={{ width: 170 }}
+            style={{ flex: "1 1 150px" }}
           >
             {STATUS_PEDIDO.map((s) => (
               <option key={s.valor} value={s.valor}>{s.label}</option>
@@ -181,7 +181,7 @@ export default function FinanceiroPage() {
             className="input"
             value={statusFiltro}
             onChange={(e) => setStatusFiltro(e.target.value)}
-            style={{ width: 160 }}
+            style={{ flex: "1 1 150px" }}
           >
             <option value="todos">Todos os pagamentos</option>
             <option value="aberto">Com valor em aberto</option>
@@ -191,7 +191,7 @@ export default function FinanceiroPage() {
       </div>
 
       {periodo === "custom" && (
-        <div style={{ display: "flex", gap: "0.6rem", alignItems: "center", marginBottom: "1.2rem" }}>
+        <div style={{ display: "flex", gap: "0.6rem", alignItems: "center", marginBottom: "1.2rem", flexWrap: "wrap" }}>
           <label style={{ fontSize: "0.85rem", color: "var(--ink-soft)" }}>De</label>
           <input
             className="input"
@@ -211,7 +211,7 @@ export default function FinanceiroPage() {
         </div>
       )}
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "0.9rem", marginBottom: "1.8rem" }}>
+      <div className="grid-3" style={{ marginBottom: "1.8rem" }}>
         <CartaoKpi icone="🧾" cor="var(--brand-soft)" corIcone="var(--brand)" label="Faturado no período" valor={`R$ ${totais.faturado.toFixed(2)}`} />
         <CartaoKpi icone="✅" cor="var(--sage-bg)" corIcone="var(--sage)" label="Recebido" valor={`R$ ${totais.recebido.toFixed(2)}`} />
         <CartaoKpi icone="⏳" cor="var(--purple-bg)" corIcone="var(--purple)" label="Em aberto" valor={`R$ ${totais.emAberto.toFixed(2)}`} />
@@ -230,10 +230,11 @@ export default function FinanceiroPage() {
               <div key={chave} className="index-card">
                 <div
                   onClick={() => setExpandido(aberto ? null : chave)}
-                  style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "1rem", cursor: "pointer" }}
+                  className="index-card-row"
+                  style={{ cursor: "pointer" }}
                 >
                   <div>
-                    <div style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", flexWrap: "wrap" }}>
                       <strong>{g.cliente}</strong>
                       <span
                         className="badge"
@@ -250,7 +251,7 @@ export default function FinanceiroPage() {
                       {g.telefone ? ` · ${g.telefone}` : ""}
                     </div>
                   </div>
-                  <div style={{ display: "flex", gap: "1.4rem", textAlign: "right" }}>
+                  <div style={{ display: "flex", gap: "1.4rem", textAlign: "right", flexWrap: "wrap" }}>
                     <div>
                       <div style={{ fontSize: "0.72rem", color: "var(--ink-soft)" }}>Faturado</div>
                       <div className="mono" style={{ fontWeight: 600 }}>R$ {g.faturado.toFixed(2)}</div>
@@ -274,12 +275,12 @@ export default function FinanceiroPage() {
                       <div
                         key={p.id}
                         onClick={() => router.push(`/pedidos/${p.id}`)}
-                        style={{ display: "flex", justifyContent: "space-between", fontSize: "0.85rem", cursor: "pointer" }}
+                        style={{ display: "flex", justifyContent: "space-between", gap: "0.6rem", flexWrap: "wrap", fontSize: "0.85rem", cursor: "pointer" }}
                       >
                         <span>
                           {format(new Date(p.data_entrega), "dd/MM/yyyy")} · {p.itens}
                         </span>
-                        <span className="mono">R$ {Number(p.valor_total).toFixed(2)}</span>
+                        <span className="mono" style={{ flexShrink: 0 }}>R$ {Number(p.valor_total).toFixed(2)}</span>
                       </div>
                     ))}
                   </div>

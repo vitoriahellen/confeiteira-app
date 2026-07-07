@@ -30,7 +30,7 @@ export default function ProdutoForm({ inicial, onSubmit, enviando, textoBotao })
         <input className="input" required value={form.nome} onChange={(e) => campo("nome", e.target.value)} />
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
+      <div className="grid-2">
         <div>
           <label className="label">Unidade de medida</label>
           <select className="input" value={form.unidade} onChange={(e) => campo("unidade", e.target.value)}>

@@ -58,7 +58,7 @@ export default function ClienteDetalhePage() {
   return (
     <div>
       <Link href="/clientes" style={{ fontSize: "0.85rem", color: "var(--ink-soft)" }}>← Voltar para clientes</Link>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginTop: "0.8rem", marginBottom: "1.2rem" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginTop: "0.8rem", marginBottom: "1.2rem", flexWrap: "wrap", gap: "0.6rem" }}>
         <div>
           <p className="label" style={{ color: "var(--accent)" }}>Cliente</p>
           <h1 className="display" style={{ fontSize: "1.8rem", margin: 0 }}>{cliente.nome}</h1>

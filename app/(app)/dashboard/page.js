@@ -141,7 +141,7 @@ export default function DashboardPage() {
         </div>
       )}
 
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.8rem" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.8rem", flexWrap: "wrap", gap: "0.6rem" }}>
         <p className="label" style={{ color: "var(--accent)", margin: 0 }}>Resumo do período</p>
         <div className="card" style={{ display: "flex", padding: 4 }}>
           {[7, 30, 60].map((dias) => (
@@ -162,22 +162,22 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "0.9rem", marginBottom: "1.8rem" }}>
+      <div className="grid-3" style={{ marginBottom: "1.8rem" }}>
         <CartaoKpi icone="🧁" cor="var(--brand-soft)" corIcone="var(--brand)" label="Pedidos criados no período" valor={kpis.totalPedidos} />
         <CartaoKpi icone="⏳" cor="var(--purple-bg)" corIcone="var(--purple)" label="A receber" valor={`R$ ${kpis.aReceber.toFixed(2)}`} />
         <CartaoKpi icone="✅" cor="var(--sage-bg)" corIcone="var(--sage)" label="Recebido" valor={`R$ ${kpis.recebido.toFixed(2)}`} />
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 300px", gap: "1.6rem", alignItems: "start" }}>
-      <div>
-      <header style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: "1.6rem" }}>
+      <div className="grid-dashboard">
+      <div style={{ minWidth: 0 }}>
+      <header style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: "1.6rem", flexWrap: "wrap", gap: "0.6rem" }}>
         <div>
           <p className="label" style={{ color: "var(--accent)" }}>Agenda</p>
           <h1 className="display" style={{ fontSize: "1.8rem", margin: 0 }}>
             {format(referencia, modo === "semana" ? "'Semana de' d 'de' MMMM" : "MMMM 'de' yyyy", { locale: ptBR })}
           </h1>
         </div>
-        <div style={{ display: "flex", gap: "0.5rem" }}>
+        <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
           <div className="card" style={{ display: "flex", padding: 4 }}>
             <button
               onClick={() => setModo("semana")}
@@ -212,7 +212,7 @@ export default function DashboardPage() {
       {carregando ? (
         <p style={{ color: "var(--ink-soft)" }}>Carregando agenda...</p>
       ) : modo === "semana" ? (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: "0.8rem" }}>
+        <div className="grid-week">
           {dias.map((dia) => {
             const chave = format(dia, "yyyy-MM-dd");
             const doDia = pedidosPorDia[chave] || [];
@@ -249,13 +249,13 @@ export default function DashboardPage() {
           })}
         </div>
       ) : (
-        <div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: "0.5rem", marginBottom: "0.4rem" }}>
+        <div className="month-scroll">
+          <div className="month-grid" style={{ marginBottom: "0.4rem" }}>
             {["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"].map((d) => (
               <p key={d} style={{ textAlign: "center", fontSize: "0.75rem", color: "var(--ink-soft)", margin: 0 }}>{d}</p>
             ))}
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: "0.5rem" }}>
+          <div className="month-grid">
             {dias.map((dia) => {
               const chave = format(dia, "yyyy-MM-dd");
               const doDia = pedidosPorDia[chave] || [];

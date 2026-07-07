@@ -48,7 +48,7 @@ export default function LoginPage() {
       }}
     >
       <Logo variant="stacked" />
-      <form onSubmit={handleSubmit} className="card" style={{ padding: "2.2rem", width: 380 }}>
+      <form onSubmit={handleSubmit} className="card" style={{ padding: "2.2rem", width: "100%", maxWidth: 380 }}>
         <h1 className="display" style={{ fontSize: "1.6rem", marginBottom: "1.4rem" }}>
           Entrar
         </h1>
