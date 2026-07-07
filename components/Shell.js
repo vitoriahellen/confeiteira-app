@@ -1,12 +1,15 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import Logo from "@/components/Logo";
+import Footer from "@/components/Footer";
 
 const LINKS = [
   { href: "/dashboard", label: "Agenda", icon: "📅" },
   { href: "/pedidos", label: "Pedidos", icon: "🧁" },
+  { href: "/clientes", label: "Clientes", icon: "📇" },
   { href: "/financeiro", label: "Financeiro", icon: "💰" },
   { href: "/usuarios", label: "Usuárias", icon: "👥", adminOnly: true },
   { href: "/configuracoes", label: "Configurações", icon: "⚙️", adminOnly: true },
@@ -15,6 +18,14 @@ const LINKS = [
 export default function Shell({ user, children }) {
   const pathname = usePathname();
   const router = useRouter();
+  const [logoUrl, setLogoUrl] = useState("");
+
+  useEffect(() => {
+    fetch("/api/settings")
+      .then((r) => r.json())
+      .then((data) => setLogoUrl(data.config?.logo_url || ""))
+      .catch(() => {});
+  }, []);
 
   async function sair() {
     await fetch("/api/auth/logout", { method: "POST" });
@@ -37,7 +48,7 @@ export default function Shell({ user, children }) {
         }}
       >
         <div style={{ padding: "0.4rem 0.6rem 1.6rem" }}>
-          <Logo variant="sidebar" />
+          <Logo variant="sidebar" logoUrl={logoUrl} />
         </div>
 
         {LINKS.filter((l) => !l.adminOnly || user?.papel === "admin").map((link) => {
@@ -99,7 +110,10 @@ export default function Shell({ user, children }) {
         </div>
       </aside>
 
-      <main style={{ flex: 1, padding: "2rem 2.4rem", maxWidth: 1360 }}>{children}</main>
+      <main style={{ flex: 1, padding: "2rem 2.4rem", maxWidth: 1360, display: "flex", flexDirection: "column" }}>
+        <div style={{ flex: 1 }}>{children}</div>
+        <Footer />
+      </main>
     </div>
   );
 }

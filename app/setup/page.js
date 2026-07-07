@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Logo from "@/components/Logo";
+import Footer from "@/components/Footer";
 
 export default function SetupPage() {
   const router = useRouter();
@@ -65,6 +66,7 @@ export default function SetupPage() {
             Ir para o login
           </a>
         </div>
+        <Footer />
       </Centro>
     );
   }
@@ -125,6 +127,7 @@ export default function SetupPage() {
           {enviando ? "Criando..." : "Criar administrador"}
         </button>
       </form>
+      <Footer />
     </Centro>
   );
 }

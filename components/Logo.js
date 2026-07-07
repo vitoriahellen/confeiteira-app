@@ -11,7 +11,33 @@ function Heart({ size = 12, color = "var(--accent)" }) {
  * variant "stacked" — lockup grande para telas de login/setup, no estilo do
  * cartão de marca (badge escuro + "Casa" script + "do Bolo" em serifa).
  */
-export default function Logo({ variant = "sidebar" }) {
+export default function Logo({ variant = "sidebar", logoUrl }) {
+  if (logoUrl) {
+    if (variant === "stacked") {
+      return (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={logoUrl}
+          alt="Logo"
+          style={{ maxWidth: 240, maxHeight: 180, borderRadius: 20, objectFit: "contain" }}
+        />
+      );
+    }
+    return (
+      <div style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={logoUrl}
+          alt="Logo"
+          style={{ width: 40, height: 40, borderRadius: 10, objectFit: "cover", flexShrink: 0 }}
+        />
+        <p style={{ fontSize: "0.72rem", color: "var(--ink-soft)", margin: 0 }}>
+          gestão de encomendas
+        </p>
+      </div>
+    );
+  }
+
   if (variant === "stacked") {
     return (
       <div

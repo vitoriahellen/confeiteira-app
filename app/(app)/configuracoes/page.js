@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Logo from "@/components/Logo";
 
 export default function ConfiguracoesPage() {
   const [config, setConfig] = useState({ dias_lembrete_pagamento: "2", dias_alerta_entrega: "3" });
@@ -9,11 +10,16 @@ export default function ConfiguracoesPage() {
   const [salvando, setSalvando] = useState(false);
   const [salvo, setSalvo] = useState(false);
 
+  const [logoUrl, setLogoUrl] = useState("");
+  const [salvandoLogo, setSalvandoLogo] = useState(false);
+  const [erroLogo, setErroLogo] = useState("");
+
   useEffect(() => {
     fetch("/api/settings")
       .then((r) => r.json())
       .then((data) => {
         if (data.config) setConfig(data.config);
+        setLogoUrl(data.config?.logo_url || "");
         setZapiConfigurada(Boolean(data.zapiConfigurada));
         setCarregando(false);
       })
@@ -33,12 +39,84 @@ export default function ConfiguracoesPage() {
     setSalvo(true);
   }
 
+  function handleArquivoLogo(e) {
+    const arquivo = e.target.files?.[0];
+    if (!arquivo) return;
+    if (!arquivo.type.startsWith("image/")) {
+      setErroLogo("Selecione um arquivo de imagem.");
+      return;
+    }
+    if (arquivo.size > 1_000_000) {
+      setErroLogo("A imagem deve ter no máximo 1MB.");
+      return;
+    }
+    setErroLogo("");
+    const leitor = new FileReader();
+    leitor.onload = () => setLogoUrl(leitor.result);
+    leitor.readAsDataURL(arquivo);
+  }
+
+  async function salvarLogo(valor) {
+    setSalvandoLogo(true);
+    setErroLogo("");
+    try {
+      const res = await fetch("/api/settings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ logo_url: valor }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        setErroLogo(data.error || "Não foi possível salvar a logo.");
+        setSalvandoLogo(false);
+        return;
+      }
+      window.location.reload();
+    } catch {
+      setErroLogo("Erro de conexão.");
+      setSalvandoLogo(false);
+    }
+  }
+
   if (carregando) return <p style={{ color: "var(--ink-soft)" }}>Carregando...</p>;
 
   return (
     <div>
       <p className="label" style={{ color: "var(--accent)" }}>Configurações</p>
-      <h1 className="display" style={{ fontSize: "1.8rem", marginBottom: "1.4rem" }}>Lembretes automáticos</h1>
+      <h1 className="display" style={{ fontSize: "1.8rem", marginBottom: "1.4rem" }}>Aparência e lembretes</h1>
+
+      <div className="card" style={{ padding: "1.4rem", marginBottom: "1.4rem", maxWidth: 560 }}>
+        <h3 className="display" style={{ fontSize: "1.05rem", margin: "0 0 0.9rem" }}>Logo do sistema</h3>
+        <div style={{ marginBottom: "1rem" }}>
+          <Logo variant="sidebar" logoUrl={logoUrl} />
+        </div>
+        <label className="label">Enviar uma imagem (até 1MB)</label>
+        <input type="file" accept="image/*" onChange={handleArquivoLogo} style={{ marginBottom: "0.6rem" }} />
+        {erroLogo && <p style={{ color: "#b23b3b", fontSize: "0.85rem", marginBottom: "0.6rem" }}>{erroLogo}</p>}
+        <div style={{ display: "flex", gap: "0.6rem" }}>
+          <button
+            type="button"
+            className="btn btn-primary"
+            onClick={() => salvarLogo(logoUrl)}
+            disabled={salvandoLogo || !logoUrl}
+          >
+            {salvandoLogo ? "Salvando..." : "Salvar logo"}
+          </button>
+          {logoUrl && (
+            <button
+              type="button"
+              className="btn btn-outline"
+              onClick={() => {
+                setLogoUrl("");
+                salvarLogo("");
+              }}
+              disabled={salvandoLogo}
+            >
+              Usar logo padrão
+            </button>
+          )}
+        </div>
+      </div>
 
       <div className="card" style={{ padding: "1.4rem", marginBottom: "1.4rem", maxWidth: 560 }}>
         <div style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>

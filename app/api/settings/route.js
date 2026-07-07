@@ -7,6 +7,8 @@ const DEFAULTS = {
   dias_alerta_entrega: "3",
 };
 
+const CHAVES_PERMITIDAS = [...Object.keys(DEFAULTS), "logo_url"];
+
 export async function GET() {
   const user = await getCurrentUser();
   if (!user) return NextResponse.json({ error: "Não autenticado." }, { status: 401 });
@@ -31,7 +33,7 @@ export async function POST(request) {
 
   const body = await request.json();
 
-  for (const chave of Object.keys(DEFAULTS)) {
+  for (const chave of CHAVES_PERMITIDAS) {
     if (chave in body) {
       await query(
         `INSERT INTO configuracoes (chave, valor) VALUES ($1, $2)
