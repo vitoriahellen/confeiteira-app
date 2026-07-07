@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import ClienteForm from "@/components/ClienteForm";
 
@@ -24,7 +25,7 @@ export default function NovoClientePage() {
         setEnviando(false);
         return;
       }
-      router.push(`/clientes/${data.cliente.id}`);
+      router.push("/clientes");
     } catch {
       setErro("Erro de conexão.");
       setEnviando(false);
@@ -33,7 +34,8 @@ export default function NovoClientePage() {
 
   return (
     <div>
-      <p className="label" style={{ color: "var(--accent)" }}>Clientes</p>
+      <Link href="/clientes" style={{ fontSize: "0.85rem", color: "var(--ink-soft)" }}>← Voltar para clientes</Link>
+      <p className="label" style={{ color: "var(--accent)", marginTop: "0.8rem" }}>Clientes</p>
       <h1 className="display" style={{ fontSize: "1.8rem", marginBottom: "1.2rem" }}>Nova cliente</h1>
       {erro && <p style={{ color: "#b23b3b", marginBottom: "1rem" }}>{erro}</p>}
       <ClienteForm onSubmit={handleSubmit} enviando={enviando} textoBotao="Criar cliente" />

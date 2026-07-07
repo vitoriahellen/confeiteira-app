@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 :root {
-  /* Palette — "Casa do Bolo": rosa doce sobre branco, com o bordô da marca como acento */
+  /* Palette — "Doce Gestão": rosa doce sobre branco, com o bordô da marca como acento */
   --bg: #fdf3f6;
   --ink: #4a1930;
   --ink-soft: #9c7086;

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { query, ensureSchema } from "@/lib/db";
 import { enviarWhatsApp } from "@/lib/zapi";
+import { dentroDoHorarioConfigurado } from "@/lib/horario";
 
 function autorizado(request) {
   const secret = process.env.CRON_SECRET;
@@ -9,9 +10,9 @@ function autorizado(request) {
   return auth === `Bearer ${secret}`;
 }
 
-async function getDias(chave, padrao) {
+async function getConfig(chave, padrao) {
   const result = await query("SELECT valor FROM configuracoes WHERE chave = $1", [chave]);
-  return result.rows[0] ? Number(result.rows[0].valor) : padrao;
+  return result.rows[0] ? result.rows[0].valor : padrao;
 }
 
 export async function GET(request) {
@@ -20,7 +21,13 @@ export async function GET(request) {
   }
 
   await ensureSchema();
-  const dias = await getDias("dias_lembrete_pagamento", 2);
+
+  const horaConfigurada = await getConfig("hora_disparo_lembretes", "09:00");
+  if (!dentroDoHorarioConfigurado(horaConfigurada)) {
+    return NextResponse.json({ ok: true, skipped: "fora do horário configurado" });
+  }
+
+  const dias = Number(await getConfig("dias_lembrete_pagamento", 2));
 
   const enviados = [];
 

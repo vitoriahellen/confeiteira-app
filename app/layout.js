@@ -20,7 +20,7 @@ const dancingScript = Dancing_Script({
 });
 
 export const metadata = {
-  title: "Casa do Bolo — Gestão de encomendas",
+  title: "Doce Gestão — Sistema para confeiteiras",
   description: "Sistema de pedidos, lembretes e agenda para confeiteiras",
 };
 

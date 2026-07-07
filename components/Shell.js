@@ -9,6 +9,7 @@ import Footer from "@/components/Footer";
 const LINKS = [
   { href: "/dashboard", label: "Agenda", icon: "📅" },
   { href: "/pedidos", label: "Pedidos", icon: "🧁" },
+  { href: "/produtos", label: "Produtos", icon: "🎂" },
   { href: "/clientes", label: "Clientes", icon: "📇" },
   { href: "/financeiro", label: "Financeiro", icon: "💰" },
   { href: "/usuarios", label: "Usuárias", icon: "👥", adminOnly: true },

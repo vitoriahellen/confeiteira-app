@@ -101,9 +101,9 @@ export default function DashboardPage() {
     let recebido = 0;
 
     for (const p of pedidos) {
-      if (p.status === "cancelado" || !p.data_entrega) continue;
-      const dataEntrega = new Date(p.data_entrega.slice(0, 10) + "T00:00:00");
-      if (dataEntrega < inicio || dataEntrega > hoje) continue;
+      if (p.status === "cancelado" || !p.criado_em) continue;
+      const dataCriacao = new Date(p.criado_em.slice(0, 10) + "T00:00:00");
+      if (dataCriacao < inicio || dataCriacao > hoje) continue;
 
       totalPedidos += 1;
       const sinal = Number(p.valor_sinal) || 0;
@@ -157,7 +157,7 @@ export default function DashboardPage() {
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "0.9rem", marginBottom: "1.8rem" }}>
-        <CartaoKpi icone="🧁" cor="var(--brand-soft)" corIcone="var(--brand)" label="Pedidos no período" valor={kpis.totalPedidos} />
+        <CartaoKpi icone="🧁" cor="var(--brand-soft)" corIcone="var(--brand)" label="Pedidos criados no período" valor={kpis.totalPedidos} />
         <CartaoKpi icone="⏳" cor="var(--purple-bg)" corIcone="var(--purple)" label="A receber" valor={`R$ ${kpis.aReceber.toFixed(2)}`} />
         <CartaoKpi icone="✅" cor="var(--sage-bg)" corIcone="var(--sage)" label="Recebido" valor={`R$ ${kpis.recebido.toFixed(2)}`} />
       </div>

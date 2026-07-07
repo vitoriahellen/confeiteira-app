@@ -3,21 +3,21 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import ClienteForm from "@/components/ClienteForm";
+import ProdutoForm from "@/components/ProdutoForm";
 
-export default function ClienteDetalhePage() {
+export default function ProdutoDetalhePage() {
   const { id } = useParams();
   const router = useRouter();
-  const [cliente, setCliente] = useState(null);
+  const [produto, setProduto] = useState(null);
   const [carregando, setCarregando] = useState(true);
   const [enviando, setEnviando] = useState(false);
   const [erro, setErro] = useState("");
 
   useEffect(() => {
-    fetch(`/api/clientes/${id}`)
+    fetch(`/api/produtos/${id}`)
       .then((r) => r.json())
       .then((data) => {
-        setCliente(data.cliente);
+        setProduto(data.produto);
         setCarregando(false);
       })
       .catch(() => setCarregando(false));
@@ -27,7 +27,7 @@ export default function ClienteDetalhePage() {
     setEnviando(true);
     setErro("");
     try {
-      const res = await fetch(`/api/clientes/${id}`, {
+      const res = await fetch(`/api/produtos/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
@@ -38,7 +38,7 @@ export default function ClienteDetalhePage() {
         setEnviando(false);
         return;
       }
-      setCliente(data.cliente);
+      setProduto(data.produto);
       setEnviando(false);
     } catch {
       setErro("Erro de conexão.");
@@ -47,26 +47,26 @@ export default function ClienteDetalhePage() {
   }
 
   async function handleExcluir() {
-    if (!confirm("Tem certeza que deseja remover esta cliente? Essa ação não pode ser desfeita.")) return;
-    await fetch(`/api/clientes/${id}`, { method: "DELETE" });
-    router.push("/clientes");
+    if (!confirm("Tem certeza que deseja remover este produto? Essa ação não pode ser desfeita.")) return;
+    await fetch(`/api/produtos/${id}`, { method: "DELETE" });
+    router.push("/produtos");
   }
 
   if (carregando) return <p style={{ color: "var(--ink-soft)" }}>Carregando...</p>;
-  if (!cliente) return <p>Cliente não encontrada.</p>;
+  if (!produto) return <p>Produto não encontrado.</p>;
 
   return (
     <div>
-      <Link href="/clientes" style={{ fontSize: "0.85rem", color: "var(--ink-soft)" }}>← Voltar para clientes</Link>
+      <Link href="/produtos" style={{ fontSize: "0.85rem", color: "var(--ink-soft)" }}>← Voltar para produtos</Link>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginTop: "0.8rem", marginBottom: "1.2rem" }}>
         <div>
-          <p className="label" style={{ color: "var(--accent)" }}>Cliente</p>
-          <h1 className="display" style={{ fontSize: "1.8rem", margin: 0 }}>{cliente.nome}</h1>
+          <p className="label" style={{ color: "var(--accent)" }}>Produto</p>
+          <h1 className="display" style={{ fontSize: "1.8rem", margin: 0 }}>{produto.nome}</h1>
         </div>
-        <button onClick={handleExcluir} className="btn btn-danger">Remover cliente</button>
+        <button onClick={handleExcluir} className="btn btn-danger">Remover produto</button>
       </div>
       {erro && <p style={{ color: "#b23b3b", marginBottom: "1rem" }}>{erro}</p>}
-      <ClienteForm inicial={cliente} onSubmit={handleSubmit} enviando={enviando} textoBotao="Salvar alterações" />
+      <ProdutoForm inicial={produto} onSubmit={handleSubmit} enviando={enviando} textoBotao="Salvar alterações" />
     </div>
   );
 }

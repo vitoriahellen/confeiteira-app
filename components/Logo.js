@@ -1,15 +1,16 @@
-function Heart({ size = 12, color = "var(--accent)" }) {
+function Cupcake({ size = 18 }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill={color} aria-hidden="true">
-      <path d="M12 21s-7.5-4.6-10.2-9.1C.2 9 1 5.4 4.2 4.1 6.6 3.1 9.2 4 12 7c2.8-3 5.4-3.9 7.8-2.9 3.2 1.3 4 4.9 2.4 7.8C19.5 16.4 12 21 12 21z" />
-    </svg>
+    <span style={{ fontSize: size, lineHeight: 1 }} aria-hidden="true">
+      🧁
+    </span>
   );
 }
 
 /**
  * variant "sidebar" — lockup compacto para o topo do menu.
- * variant "stacked" — lockup grande para telas de login/setup, no estilo do
- * cartão de marca (badge escuro + "Casa" script + "do Bolo" em serifa).
+ * variant "stacked" — lockup grande para telas de login/setup.
+ * Quando `logoUrl` é informado (logo personalizada pela cliente), mostra
+ * só a imagem, sem legenda.
  */
 export default function Logo({ variant = "sidebar", logoUrl }) {
   if (logoUrl) {
@@ -24,64 +25,37 @@ export default function Logo({ variant = "sidebar", logoUrl }) {
       );
     }
     return (
-      <div style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={logoUrl}
-          alt="Logo"
-          style={{ width: 40, height: 40, borderRadius: 10, objectFit: "cover", flexShrink: 0 }}
-        />
-        <p style={{ fontSize: "0.72rem", color: "var(--ink-soft)", margin: 0 }}>
-          gestão de encomendas
-        </p>
-      </div>
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={logoUrl}
+        alt="Logo"
+        style={{ width: 40, height: 40, borderRadius: 10, objectFit: "cover", flexShrink: 0 }}
+      />
     );
   }
 
   if (variant === "stacked") {
     return (
-      <div
-        style={{
-          display: "inline-flex",
-          flexDirection: "column",
-          alignItems: "center",
-          gap: "0.2rem",
-          background: "var(--brand)",
-          color: "#fff",
-          borderRadius: 20,
-          padding: "1.6rem 2rem",
-        }}
-      >
-        <div style={{ display: "flex", alignItems: "center", gap: "0.35rem" }}>
-          <span
-            style={{
-              fontFamily: "var(--font-script)",
-              fontSize: "2rem",
-              lineHeight: 1,
-            }}
-          >
-            Casa
-          </span>
-          <Heart size={14} color="#e7a9c1" />
-        </div>
-        <div style={{ textAlign: "center", lineHeight: 0.85 }}>
-          <span
-            style={{
-              display: "block",
-              fontFamily: "var(--font-script)",
-              fontSize: "1rem",
-              marginBottom: "-0.2rem",
-            }}
-          >
-            do
-          </span>
-          <span
-            className="display"
-            style={{ color: "#fff", fontSize: "2.4rem", fontWeight: 700 }}
-          >
-            Bolo
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "0.6rem" }}>
+        <div
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: "0.5rem",
+            background: "var(--brand)",
+            color: "#fff",
+            borderRadius: 20,
+            padding: "1.4rem 2.2rem",
+          }}
+        >
+          <Cupcake size={32} />
+          <span style={{ fontFamily: "var(--font-script)", fontSize: "2.3rem", lineHeight: 1 }}>
+            Doce Gestão
           </span>
         </div>
+        <p style={{ fontSize: "0.85rem", color: "var(--ink-soft)", margin: 0 }}>
+          sistema para confeiteiras
+        </p>
       </div>
     );
   }
@@ -100,22 +74,22 @@ export default function Logo({ variant = "sidebar", logoUrl }) {
           flexShrink: 0,
         }}
       >
-        <Heart size={15} color="#f3b6cd" />
+        <Cupcake size={17} />
       </div>
       <div style={{ lineHeight: 1.05 }}>
         <p
           style={{
             fontFamily: "var(--font-script)",
             fontWeight: 700,
-            fontSize: "1.35rem",
+            fontSize: "1.3rem",
             margin: 0,
             color: "var(--brand)",
           }}
         >
-          Casa do Bolo
+          Doce Gestão
         </p>
         <p style={{ fontSize: "0.72rem", color: "var(--ink-soft)", margin: 0 }}>
-          gestão de encomendas
+          sistema para confeiteiras
         </p>
       </div>
     </div>

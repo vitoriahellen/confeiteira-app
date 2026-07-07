@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import PedidoForm from "@/components/PedidoForm";
 
@@ -56,7 +57,8 @@ export default function PedidoDetalhePage() {
 
   return (
     <div>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: "1.2rem" }}>
+      <Link href="/pedidos" style={{ fontSize: "0.85rem", color: "var(--ink-soft)" }}>← Voltar para pedidos</Link>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginTop: "0.8rem", marginBottom: "1.2rem" }}>
         <div>
           <p className="label" style={{ color: "var(--accent)" }}>Pedido #{pedido.id}</p>
           <h1 className="display" style={{ fontSize: "1.8rem", margin: 0 }}>{pedido.cliente_nome}</h1>

@@ -5,6 +5,7 @@ import { getCurrentUser } from "@/lib/auth";
 const DEFAULTS = {
   dias_lembrete_pagamento: "2",
   dias_alerta_entrega: "3",
+  hora_disparo_lembretes: "09:00",
 };
 
 const CHAVES_PERMITIDAS = [...Object.keys(DEFAULTS), "logo_url"];

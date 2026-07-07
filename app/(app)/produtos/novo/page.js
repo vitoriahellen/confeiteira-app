@@ -3,9 +3,9 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import PedidoForm from "@/components/PedidoForm";
+import ProdutoForm from "@/components/ProdutoForm";
 
-export default function NovoPedidoPage() {
+export default function NovoProdutoPage() {
   const router = useRouter();
   const [enviando, setEnviando] = useState(false);
   const [erro, setErro] = useState("");
@@ -14,18 +14,18 @@ export default function NovoPedidoPage() {
     setEnviando(true);
     setErro("");
     try {
-      const res = await fetch("/api/pedidos", {
+      const res = await fetch("/api/produtos", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
       });
       const data = await res.json();
       if (!res.ok) {
-        setErro(data.error || "Não foi possível salvar o pedido.");
+        setErro(data.error || "Não foi possível salvar o produto.");
         setEnviando(false);
         return;
       }
-      router.push("/pedidos");
+      router.push("/produtos");
     } catch {
       setErro("Erro de conexão.");
       setEnviando(false);
@@ -34,11 +34,11 @@ export default function NovoPedidoPage() {
 
   return (
     <div>
-      <Link href="/pedidos" style={{ fontSize: "0.85rem", color: "var(--ink-soft)" }}>← Voltar para pedidos</Link>
-      <p className="label" style={{ color: "var(--accent)", marginTop: "0.8rem" }}>Pedidos</p>
-      <h1 className="display" style={{ fontSize: "1.8rem", marginBottom: "1.2rem" }}>Novo pedido</h1>
+      <Link href="/produtos" style={{ fontSize: "0.85rem", color: "var(--ink-soft)" }}>← Voltar para produtos</Link>
+      <p className="label" style={{ color: "var(--accent)", marginTop: "0.8rem" }}>Produtos</p>
+      <h1 className="display" style={{ fontSize: "1.8rem", marginBottom: "1.2rem" }}>Novo produto</h1>
       {erro && <p style={{ color: "#b23b3b", marginBottom: "1rem" }}>{erro}</p>}
-      <PedidoForm onSubmit={handleSubmit} enviando={enviando} textoBotao="Criar pedido" />
+      <ProdutoForm onSubmit={handleSubmit} enviando={enviando} textoBotao="Criar produto" />
     </div>
   );
 }

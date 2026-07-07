@@ -11,6 +11,16 @@ const PERIODOS = [
   { valor: "60", label: "60 dias" },
   { valor: "90", label: "90 dias" },
   { valor: "todos", label: "Tudo" },
+  { valor: "custom", label: "Personalizado" },
+];
+
+const STATUS_PEDIDO = [
+  { valor: "todos", label: "Todos os status" },
+  { valor: "novo", label: "Novo" },
+  { valor: "em_producao", label: "Em produção" },
+  { valor: "pronto", label: "Pronto" },
+  { valor: "entregue", label: "Entregue" },
+  { valor: "cancelado", label: "Cancelado" },
 ];
 
 function calcularPeriodo(preset) {
@@ -22,10 +32,10 @@ function calcularPeriodo(preset) {
   return { de: format(inicio, "yyyy-MM-dd"), ate: format(hoje, "yyyy-MM-dd") };
 }
 
-function agruparPorCliente(pedidos) {
+function agruparPorCliente(pedidos, incluirCancelado) {
   const mapa = {};
   for (const p of pedidos) {
-    if (p.status === "cancelado") continue;
+    if (!incluirCancelado && p.status === "cancelado") continue;
     const chave = (p.cliente_nome || "").trim().toLowerCase();
     if (!chave) continue;
     if (!mapa[chave]) {
@@ -57,18 +67,24 @@ function agruparPorCliente(pedidos) {
 export default function FinanceiroPage() {
   const router = useRouter();
   const [periodo, setPeriodo] = useState("30");
+  const [deCustom, setDeCustom] = useState("");
+  const [ateCustom, setAteCustom] = useState("");
   const [busca, setBusca] = useState("");
-  const [statusFiltro, setStatusFiltro] = useState("todos"); // 'todos' | 'aberto' | 'quitado'
+  const [statusFiltro, setStatusFiltro] = useState("todos"); // 'todos' | 'aberto' | 'quitado' (pagamento)
+  const [statusPedido, setStatusPedido] = useState("todos"); // status do pedido (novo/em_producao/...)
   const [pedidos, setPedidos] = useState([]);
   const [carregando, setCarregando] = useState(true);
   const [expandido, setExpandido] = useState(null);
 
   useEffect(() => {
     setCarregando(true);
-    const { de, ate } = calcularPeriodo(periodo);
+    const { de, ate } = periodo === "custom"
+      ? { de: deCustom || null, ate: ateCustom || null }
+      : calcularPeriodo(periodo);
     const params = new URLSearchParams();
     if (de) params.set("de", de);
     if (ate) params.set("ate", ate);
+    if (statusPedido !== "todos") params.set("status", statusPedido);
     fetch(`/api/pedidos?${params.toString()}`)
       .then((r) => r.json())
       .then((data) => {
@@ -76,10 +92,10 @@ export default function FinanceiroPage() {
         setCarregando(false);
       })
       .catch(() => setCarregando(false));
-  }, [periodo]);
+  }, [periodo, deCustom, ateCustom, statusPedido]);
 
   const clientes = useMemo(() => {
-    let grupos = agruparPorCliente(pedidos);
+    let grupos = agruparPorCliente(pedidos, statusPedido !== "todos");
 
     if (busca.trim()) {
       const termo = busca.trim().toLowerCase();
@@ -90,7 +106,7 @@ export default function FinanceiroPage() {
     if (statusFiltro === "quitado") grupos = grupos.filter((g) => g.emAberto <= 0.01);
 
     return grupos;
-  }, [pedidos, busca, statusFiltro]);
+  }, [pedidos, busca, statusFiltro, statusPedido]);
 
   const totais = useMemo(
     () =>
@@ -141,16 +157,47 @@ export default function FinanceiroPage() {
           />
           <select
             className="input"
+            value={statusPedido}
+            onChange={(e) => setStatusPedido(e.target.value)}
+            style={{ width: 170 }}
+          >
+            {STATUS_PEDIDO.map((s) => (
+              <option key={s.valor} value={s.valor}>{s.label}</option>
+            ))}
+          </select>
+          <select
+            className="input"
             value={statusFiltro}
             onChange={(e) => setStatusFiltro(e.target.value)}
             style={{ width: 160 }}
           >
-            <option value="todos">Todos os clientes</option>
+            <option value="todos">Todos os pagamentos</option>
             <option value="aberto">Com valor em aberto</option>
             <option value="quitado">Quitados</option>
           </select>
         </div>
       </div>
+
+      {periodo === "custom" && (
+        <div style={{ display: "flex", gap: "0.6rem", alignItems: "center", marginBottom: "1.2rem" }}>
+          <label style={{ fontSize: "0.85rem", color: "var(--ink-soft)" }}>De</label>
+          <input
+            className="input"
+            type="date"
+            value={deCustom}
+            onChange={(e) => setDeCustom(e.target.value)}
+            style={{ width: 170 }}
+          />
+          <label style={{ fontSize: "0.85rem", color: "var(--ink-soft)" }}>Até</label>
+          <input
+            className="input"
+            type="date"
+            value={ateCustom}
+            onChange={(e) => setAteCustom(e.target.value)}
+            style={{ width: 170 }}
+          />
+        </div>
+      )}
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "0.9rem", marginBottom: "1.8rem" }}>
         <CartaoKpi icone="🧾" cor="var(--brand-soft)" corIcone="var(--brand)" label="Faturado no período" valor={`R$ ${totais.faturado.toFixed(2)}`} />

@@ -57,6 +57,10 @@ export async function POST(request) {
     itens,
     valor_total,
     valor_sinal,
+    sinal_pago,
+    restante_pago,
+    desconto,
+    acrescimo,
     data_entrega,
     data_vencimento_sinal,
     data_vencimento_restante,
@@ -74,9 +78,10 @@ export async function POST(request) {
   const result = await query(
     `INSERT INTO pedidos
       (cliente_nome, cliente_telefone, itens, valor_total, valor_sinal,
+       sinal_pago, restante_pago, desconto, acrescimo,
        data_entrega, data_vencimento_sinal, data_vencimento_restante,
        status, observacoes, criado_por)
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)
      RETURNING *`,
     [
       cliente_nome,
@@ -84,6 +89,10 @@ export async function POST(request) {
       itens,
       valor_total || 0,
       valor_sinal || 0,
+      Boolean(sinal_pago),
+      Boolean(restante_pago),
+      desconto || 0,
+      acrescimo || 0,
       data_entrega,
       data_vencimento_sinal || null,
       data_vencimento_restante || null,

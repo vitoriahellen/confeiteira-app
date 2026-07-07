@@ -7,11 +7,11 @@ export async function GET(_request, { params }) {
   if (!user) return NextResponse.json({ error: "Não autenticado." }, { status: 401 });
 
   const { id } = await params;
-  const result = await query("SELECT * FROM pedidos WHERE id = $1", [id]);
+  const result = await query("SELECT * FROM produtos WHERE id = $1", [id]);
   if (!result.rows.length) {
-    return NextResponse.json({ error: "Pedido não encontrado." }, { status: 404 });
+    return NextResponse.json({ error: "Produto não encontrado." }, { status: 404 });
   }
-  return NextResponse.json({ pedido: result.rows[0] });
+  return NextResponse.json({ produto: result.rows[0] });
 }
 
 export async function PUT(request, { params }) {
@@ -21,23 +21,7 @@ export async function PUT(request, { params }) {
   const { id } = await params;
   const body = await request.json();
 
-  const campos = [
-    "cliente_nome",
-    "cliente_telefone",
-    "itens",
-    "valor_total",
-    "valor_sinal",
-    "sinal_pago",
-    "restante_pago",
-    "desconto",
-    "acrescimo",
-    "data_entrega",
-    "data_vencimento_sinal",
-    "data_vencimento_restante",
-    "status",
-    "observacoes",
-  ];
-
+  const campos = ["nome", "unidade", "descricao", "preco_padrao"];
   const sets = [];
   const valores = [];
 
@@ -56,15 +40,15 @@ export async function PUT(request, { params }) {
   valores.push(id);
 
   const result = await query(
-    `UPDATE pedidos SET ${sets.join(", ")} WHERE id = $${valores.length} RETURNING *`,
+    `UPDATE produtos SET ${sets.join(", ")} WHERE id = $${valores.length} RETURNING *`,
     valores
   );
 
   if (!result.rows.length) {
-    return NextResponse.json({ error: "Pedido não encontrado." }, { status: 404 });
+    return NextResponse.json({ error: "Produto não encontrado." }, { status: 404 });
   }
 
-  return NextResponse.json({ pedido: result.rows[0] });
+  return NextResponse.json({ produto: result.rows[0] });
 }
 
 export async function DELETE(_request, { params }) {
@@ -72,6 +56,6 @@ export async function DELETE(_request, { params }) {
   if (!user) return NextResponse.json({ error: "Não autenticado." }, { status: 401 });
 
   const { id } = await params;
-  await query("DELETE FROM pedidos WHERE id = $1", [id]);
+  await query("DELETE FROM produtos WHERE id = $1", [id]);
   return NextResponse.json({ ok: true });
 }
