@@ -15,6 +15,8 @@ export default function MensageriaPage() {
   const [templates, setTemplates] = useState(null);
   const [carregando, setCarregando] = useState(true);
   const [filtro, setFiltro] = useState("pendentes"); // 'todos' | 'pendentes' | 'enviados'
+  const [enviando, setEnviando] = useState(null); // chave `${pedidoId}-${tipo}` em andamento
+  const [erros, setErros] = useState({});
 
   useEffect(() => {
     setCarregando(true);
@@ -42,6 +44,36 @@ export default function MensageriaPage() {
 
   const pendentesCount = itens.filter((i) => !i.enviado).length;
 
+  async function notificarAgora(item) {
+    const chave = `${item.pedidoId}-${item.tipo}`;
+    setEnviando(chave);
+    setErros((atual) => ({ ...atual, [chave]: "" }));
+    try {
+      const res = await fetch("/api/mensageria/notificar", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ pedidoId: item.pedidoId, tipo: item.tipo }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setErros((atual) => ({ ...atual, [chave]: data.error || "Não foi possível enviar." }));
+        setEnviando(null);
+        return;
+      }
+      setPedidos((atual) =>
+        atual.map((p) =>
+          p.id === item.pedidoId
+            ? { ...p, lembretes_enviados: [...(p.lembretes_enviados || []), item.tipo] }
+            : p
+        )
+      );
+      setEnviando(null);
+    } catch {
+      setErros((atual) => ({ ...atual, [chave]: "Erro de conexão." }));
+      setEnviando(null);
+    }
+  }
+
   return (
     <div>
       <p className="label" style={{ color: "var(--accent)" }}>Mensageria</p>
@@ -50,7 +82,8 @@ export default function MensageriaPage() {
       </h1>
       <p style={{ color: "var(--ink-soft)", fontSize: "0.9rem", marginBottom: "1.2rem" }}>
         Aqui ficam registradas as próximas cobranças de sinal/restante e os alertas de entrega — o
-        sistema verifica tudo automaticamente 1x por dia, às 09h (horário de Brasília).
+        sistema verifica tudo automaticamente 1x por dia, às 09h (horário de Brasília). Use
+        &quot;Notificar agora&quot; pra disparar uma mensagem na hora, sem esperar a verificação automática.
       </p>
 
       <div style={{ display: "flex", gap: "0.4rem", marginBottom: "1.2rem", flexWrap: "wrap" }}>
@@ -67,56 +100,74 @@ export default function MensageriaPage() {
         <div style={{ display: "flex", flexDirection: "column", gap: "0.6rem" }}>
           {itensFiltrados.map((item) => {
             const rotulo = TIPO_LABEL[item.tipo];
-            const link = !item.enviado ? linkWhatsApp(item.telefone, mensagemPadrao(item, templates)) : null;
+            const chave = `${item.pedidoId}-${item.tipo}`;
+            const link = !item.enviado && item.tipo !== "entrega"
+              ? linkWhatsApp(item.telefone, mensagemPadrao(item, templates))
+              : null;
+            const enviandoEsta = enviando === chave;
+            const erro = erros[chave];
             return (
-              <div
-                key={`${item.pedidoId}-${item.tipo}`}
-                className="index-card"
-                style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "1rem", flexWrap: "wrap" }}
-              >
-                <div style={{ display: "flex", alignItems: "center", gap: "0.8rem", flex: 1, minWidth: 0 }}>
-                  <span className="badge" style={{ background: rotulo.fundo, color: rotulo.cor, flexShrink: 0 }}>
-                    {rotulo.texto}
-                  </span>
-                  <div style={{ minWidth: 0 }}>
-                    <Link href={`/pedidos/${item.pedidoId}`} style={{ fontWeight: 600 }}>
-                      {item.cliente}
-                    </Link>
-                    <div style={{ color: "var(--ink-soft)", fontSize: "0.85rem", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                      {item.pedido.itens}
+              <div key={chave} className="index-card">
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "1rem", flexWrap: "wrap" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "0.8rem", flex: 1, minWidth: 0 }}>
+                    <span className="badge" style={{ background: rotulo.fundo, color: rotulo.cor, flexShrink: 0 }}>
+                      {rotulo.texto}
+                    </span>
+                    <div style={{ minWidth: 0 }}>
+                      <Link href={`/pedidos/${item.pedidoId}`} style={{ fontWeight: 600 }}>
+                        {item.cliente}
+                      </Link>
+                      <div style={{ color: "var(--ink-soft)", fontSize: "0.85rem", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        {item.pedido.itens}
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                <div style={{ textAlign: "right", flexShrink: 0 }}>
-                  <div style={{ fontSize: "0.85rem", fontWeight: 600 }}>{formatarDataRelativa(item.data)}</div>
-                  <div style={{ fontSize: "0.78rem", color: item.enviado ? "var(--sage)" : "var(--ink-soft)" }}>
-                    {item.enviado ? "✓ Enviado" : "Pendente"}
+                  <div style={{ textAlign: "right", flexShrink: 0 }}>
+                    <div style={{ fontSize: "0.85rem", fontWeight: 600 }}>{formatarDataRelativa(item.data)}</div>
+                    <div style={{ fontSize: "0.78rem", color: item.enviado ? "var(--sage)" : "var(--ink-soft)" }}>
+                      {item.enviado ? "✓ Enviado" : "Pendente"}
+                    </div>
                   </div>
-                </div>
 
-                {link && (
-                  <a
-                    href={link}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    title="Enviar agora pelo WhatsApp"
-                    style={{
-                      width: 34,
-                      height: 34,
-                      borderRadius: "50%",
-                      background: "var(--sage)",
-                      color: "#fff",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      flexShrink: 0,
-                      textDecoration: "none",
-                    }}
-                  >
-                    ✆
-                  </a>
-                )}
+                  {!item.enviado && (
+                    <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", flexShrink: 0 }}>
+                      <button
+                        type="button"
+                        className="btn btn-outline"
+                        onClick={() => notificarAgora(item)}
+                        disabled={enviandoEsta}
+                        style={{ fontSize: "0.8rem", padding: "0.4rem 0.7rem" }}
+                      >
+                        {enviandoEsta ? "Enviando..." : "Notificar agora"}
+                      </button>
+
+                      {link && (
+                        <a
+                          href={link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          title="Enviar pelo WhatsApp Web"
+                          style={{
+                            width: 34,
+                            height: 34,
+                            borderRadius: "50%",
+                            background: "var(--sage)",
+                            color: "#fff",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            flexShrink: 0,
+                            textDecoration: "none",
+                          }}
+                        >
+                          ✆
+                        </a>
+                      )}
+                    </div>
+                  )}
+                </div>
+                {erro && <p style={{ color: "#b23b3b", fontSize: "0.8rem", marginTop: "0.5rem" }}>{erro}</p>}
               </div>
             );
           })}

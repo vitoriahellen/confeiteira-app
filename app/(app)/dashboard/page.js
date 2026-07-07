@@ -329,7 +329,7 @@ function PainelLembretes({ itens, templates }) {
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: "0.6rem" }}>
           {itens.map((item) => {
-            const link = linkWhatsApp(item.telefone, mensagemPadrao(item, templates));
+            const link = item.tipo !== "entrega" ? linkWhatsApp(item.telefone, mensagemPadrao(item, templates)) : null;
             return (
               <div
                 key={`${item.pedidoId}-${item.tipo}`}
