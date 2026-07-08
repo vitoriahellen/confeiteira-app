@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { query } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth";
+import { registrarEvento } from "@/lib/auditoria";
 
 export async function GET(_request, { params }) {
   const user = await getCurrentUser();
@@ -64,6 +65,14 @@ export async function PUT(request, { params }) {
     return NextResponse.json({ error: "Pedido não encontrado." }, { status: 404 });
   }
 
+  await registrarEvento({
+    usuarioId: user.id,
+    usuarioNome: user.nome,
+    tipo: "edicao",
+    modulo: "pedidos",
+    detalhes: `Editou pedido #${id}.`,
+  });
+
   return NextResponse.json({ pedido: result.rows[0] });
 }
 
@@ -73,5 +82,12 @@ export async function DELETE(_request, { params }) {
 
   const { id } = await params;
   await query("DELETE FROM pedidos WHERE id = $1", [id]);
+  await registrarEvento({
+    usuarioId: user.id,
+    usuarioNome: user.nome,
+    tipo: "exclusao",
+    modulo: "pedidos",
+    detalhes: `Removeu pedido #${id}.`,
+  });
   return NextResponse.json({ ok: true });
 }

@@ -233,13 +233,6 @@ textarea.input {
   gap: 0.8rem;
 }
 
-.grid-dashboard {
-  display: grid;
-  grid-template-columns: 1fr 300px;
-  gap: 1.6rem;
-  align-items: start;
-}
-
 .month-grid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
@@ -324,7 +317,6 @@ textarea.input {
     overflow-x: auto;
     padding-bottom: 0.5rem;
   }
-  .grid-dashboard,
   .grid-form-list {
     grid-template-columns: 1fr;
   }

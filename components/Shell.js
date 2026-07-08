@@ -5,23 +5,32 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import Logo from "@/components/Logo";
 import Footer from "@/components/Footer";
+import Tutorial from "@/components/Tutorial";
+import AvisoDoDia from "@/components/AvisoDoDia";
 
 const LINKS = [
   { href: "/dashboard", label: "Agenda", icon: "📅" },
-  { href: "/pedidos", label: "Pedidos", icon: "🧁" },
-  { href: "/produtos", label: "Produtos", icon: "🎂" },
-  { href: "/clientes", label: "Clientes", icon: "📇" },
-  { href: "/financeiro", label: "Financeiro", icon: "💰" },
-  { href: "/mensageria", label: "Mensageria", icon: "📨" },
+  { href: "/pedidos", label: "Pedidos", icon: "🧁", modulo: "pedidos" },
+  { href: "/produtos", label: "Produtos", icon: "🎂", modulo: "produtos" },
+  { href: "/clientes", label: "Clientes", icon: "📇", modulo: "clientes" },
+  { href: "/financeiro", label: "Financeiro", icon: "💰", modulo: "financeiro" },
+  { href: "/mensageria", label: "Mensageria", icon: "📨", modulo: "mensageria" },
   { href: "/usuarios", label: "Usuárias", icon: "👥", adminOnly: true },
   { href: "/configuracoes", label: "Configurações", icon: "⚙️", adminOnly: true },
 ];
+
+function podeAcessar(link, user) {
+  if (link.adminOnly) return user?.papel === "admin";
+  if (link.modulo) return user?.papel === "admin" || (user?.permissoes || []).includes(link.modulo);
+  return true;
+}
 
 export default function Shell({ user, children }) {
   const pathname = usePathname();
   const router = useRouter();
   const [logoUrl, setLogoUrl] = useState("");
   const [menuAberto, setMenuAberto] = useState(false);
+  const [mostrarTutorial, setMostrarTutorial] = useState(false);
 
   useEffect(() => {
     fetch("/api/settings")
@@ -33,6 +42,23 @@ export default function Shell({ user, children }) {
   useEffect(() => {
     setMenuAberto(false);
   }, [pathname]);
+
+  useEffect(() => {
+    if (user?.tutorialVisto === false && !sessionStorage.getItem("tutorial_fechado")) {
+      setMostrarTutorial(true);
+    }
+    function abrirManualmente() {
+      setMostrarTutorial(true);
+    }
+    window.addEventListener("abrir-tutorial", abrirManualmente);
+    return () => window.removeEventListener("abrir-tutorial", abrirManualmente);
+  }, [user?.tutorialVisto]);
+
+  function fecharTutorial() {
+    setMostrarTutorial(false);
+    sessionStorage.setItem("tutorial_fechado", "1");
+    fetch("/api/usuarios/tutorial-visto", { method: "POST" }).catch(() => {});
+  }
 
   async function sair() {
     await fetch("/api/auth/logout", { method: "POST" });
@@ -77,7 +103,7 @@ export default function Shell({ user, children }) {
           <Logo variant="sidebar" logoUrl={logoUrl} />
         </div>
 
-        {LINKS.filter((l) => !l.adminOnly || user?.papel === "admin").map((link) => {
+        {LINKS.filter((l) => podeAcessar(l, user)).map((link) => {
           const active = pathname === link.href || pathname.startsWith(link.href + "/");
           return (
             <Link
@@ -140,6 +166,9 @@ export default function Shell({ user, children }) {
         <div style={{ flex: 1, minWidth: 0 }}>{children}</div>
         <Footer />
       </main>
+
+      {mostrarTutorial && <Tutorial onFechar={fecharTutorial} />}
+      {!mostrarTutorial && <AvisoDoDia />}
     </div>
   );
 }

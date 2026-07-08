@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { query, ensureSchema } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth";
+import { registrarEvento } from "@/lib/auditoria";
 
 export async function GET(request) {
   const user = await getCurrentUser();
@@ -43,6 +44,14 @@ export async function POST(request) {
     `INSERT INTO produtos (nome, unidade, descricao, preco_padrao) VALUES ($1, $2, $3, $4) RETURNING *`,
     [nome, unidade || "Un", descricao || null, preco_padrao || 0]
   );
+
+  await registrarEvento({
+    usuarioId: user.id,
+    usuarioNome: user.nome,
+    tipo: "criacao",
+    modulo: "produtos",
+    detalhes: `Criou produto ${nome}.`,
+  });
 
   return NextResponse.json({ produto: result.rows[0] });
 }

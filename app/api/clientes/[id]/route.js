@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { query } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth";
+import { registrarEvento } from "@/lib/auditoria";
 
 export async function GET(_request, { params }) {
   const user = await getCurrentUser();
@@ -48,6 +49,14 @@ export async function PUT(request, { params }) {
     return NextResponse.json({ error: "Cliente não encontrada." }, { status: 404 });
   }
 
+  await registrarEvento({
+    usuarioId: user.id,
+    usuarioNome: user.nome,
+    tipo: "edicao",
+    modulo: "clientes",
+    detalhes: `Editou cliente #${id}.`,
+  });
+
   return NextResponse.json({ cliente: result.rows[0] });
 }
 
@@ -57,5 +66,12 @@ export async function DELETE(_request, { params }) {
 
   const { id } = await params;
   await query("DELETE FROM clientes WHERE id = $1", [id]);
+  await registrarEvento({
+    usuarioId: user.id,
+    usuarioNome: user.nome,
+    tipo: "exclusao",
+    modulo: "clientes",
+    detalhes: `Removeu cliente #${id}.`,
+  });
   return NextResponse.json({ ok: true });
 }

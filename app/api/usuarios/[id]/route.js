@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { query } from "@/lib/db";
 import { getCurrentUser, hashPassword } from "@/lib/auth";
+import { registrarEvento } from "@/lib/auditoria";
 
 export async function PUT(request, { params }) {
   const user = await getCurrentUser();
@@ -10,7 +11,7 @@ export async function PUT(request, { params }) {
   }
 
   const { id } = await params;
-  const { nome, telefone, senha } = await request.json();
+  const { nome, telefone, senha, permissoes } = await request.json();
 
   const sets = [];
   const valores = [];
@@ -22,6 +23,10 @@ export async function PUT(request, { params }) {
   if (telefone !== undefined) {
     valores.push(telefone);
     sets.push(`telefone = $${valores.length}`);
+  }
+  if (permissoes !== undefined) {
+    valores.push(JSON.stringify(permissoes));
+    sets.push(`permissoes = $${valores.length}::jsonb`);
   }
   if (senha) {
     if (senha.length < 6) {
@@ -39,13 +44,21 @@ export async function PUT(request, { params }) {
   valores.push(id);
   const result = await query(
     `UPDATE usuarios SET ${sets.join(", ")} WHERE id = $${valores.length}
-     RETURNING id, nome, email, papel, telefone`,
+     RETURNING id, nome, email, papel, telefone, permissoes`,
     valores
   );
 
   if (!result.rows.length) {
     return NextResponse.json({ error: "Usuário não encontrado." }, { status: 404 });
   }
+
+  await registrarEvento({
+    usuarioId: user.id,
+    usuarioNome: user.nome,
+    tipo: "edicao",
+    modulo: "usuarios",
+    detalhes: `Editou usuária #${id}${permissoes !== undefined ? " (permissões atualizadas)" : ""}.`,
+  });
 
   return NextResponse.json({ usuario: result.rows[0] });
 }
@@ -72,5 +85,12 @@ export async function DELETE(_request, { params }) {
   }
 
   await query("DELETE FROM usuarios WHERE id = $1", [id]);
+  await registrarEvento({
+    usuarioId: user.id,
+    usuarioNome: user.nome,
+    tipo: "exclusao",
+    modulo: "usuarios",
+    detalhes: `Removeu usuária #${id}.`,
+  });
   return NextResponse.json({ ok: true });
 }

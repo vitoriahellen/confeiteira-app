@@ -10,6 +10,17 @@ function getSecretKey() {
 
 const PUBLIC_PATHS = ["/login", "/setup"];
 
+// Módulos com acesso restrito por permissão (ver coluna `permissoes` em usuarios).
+const MODULO_POR_ROTA = [
+  { prefixo: "/pedidos", modulo: "pedidos" },
+  { prefixo: "/produtos", modulo: "produtos" },
+  { prefixo: "/clientes", modulo: "clientes" },
+  { prefixo: "/financeiro", modulo: "financeiro" },
+  { prefixo: "/mensageria", modulo: "mensageria" },
+];
+// Rotas restritas a administradoras (reforça no servidor o que já era só client-side no Shell).
+const ROTAS_ADMIN = ["/usuarios", "/configuracoes"];
+
 export async function middleware(request) {
   const { pathname } = request.nextUrl;
 
@@ -22,20 +33,34 @@ export async function middleware(request) {
   }
 
   const token = request.cookies.get(COOKIE_NAME)?.value;
-  let valid = false;
+  let payload = null;
 
   if (token) {
     try {
-      await jwtVerify(token, getSecretKey());
-      valid = true;
+      const verificado = await jwtVerify(token, getSecretKey());
+      payload = verificado.payload;
     } catch {
-      valid = false;
+      payload = null;
     }
   }
 
-  if (!valid) {
+  if (!payload) {
     const loginUrl = new URL("/login", request.url);
     return NextResponse.redirect(loginUrl);
+  }
+
+  const ehAdmin = payload.papel === "admin";
+
+  if (ROTAS_ADMIN.some((p) => pathname.startsWith(p)) && !ehAdmin) {
+    return NextResponse.redirect(new URL("/dashboard", request.url));
+  }
+
+  const rotaModulo = MODULO_POR_ROTA.find((r) => pathname.startsWith(r.prefixo));
+  if (rotaModulo && !ehAdmin) {
+    const permissoes = Array.isArray(payload.permissoes) ? payload.permissoes : [];
+    if (!permissoes.includes(rotaModulo.modulo)) {
+      return NextResponse.redirect(new URL("/dashboard", request.url));
+    }
   }
 
   return NextResponse.next();

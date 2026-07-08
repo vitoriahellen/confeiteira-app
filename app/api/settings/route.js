@@ -1,11 +1,13 @@
 import { NextResponse } from "next/server";
 import { query, ensureSchema } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth";
+import { registrarEvento } from "@/lib/auditoria";
 import { TEMPLATES_PADRAO } from "@/lib/lembretes";
 
 const DEFAULTS = {
   dias_lembrete_pagamento: "2",
   dias_alerta_entrega: "3",
+  mostrar_integracao_mensageria: "nao",
   ...TEMPLATES_PADRAO,
 };
 
@@ -44,6 +46,14 @@ export async function POST(request) {
       );
     }
   }
+
+  await registrarEvento({
+    usuarioId: user.id,
+    usuarioNome: user.nome,
+    tipo: "edicao",
+    modulo: "configuracoes",
+    detalhes: `Atualizou: ${Object.keys(body).join(", ")}.`,
+  });
 
   return NextResponse.json({ ok: true });
 }

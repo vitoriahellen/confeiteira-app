@@ -16,7 +16,7 @@ import {
   isToday,
 } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { listarLembretes, formatarDataRelativa, linkWhatsApp, mensagemPadrao } from "@/lib/lembretes";
+import { obterDatasComemorativasParaAnos } from "@/lib/feriados";
 import CartaoKpi from "@/components/CartaoKpi";
 
 const STATUS_LABEL = {
@@ -25,6 +25,14 @@ const STATUS_LABEL = {
   pronto: "Pronto",
   entregue: "Entregue",
   cancelado: "Cancelado",
+};
+
+const COR_STATUS = {
+  novo: "var(--purple)",
+  em_producao: "#a5680f",
+  pronto: "var(--sage)",
+  entregue: "var(--brand)",
+  cancelado: "#a53333",
 };
 
 function saudacao() {
@@ -42,7 +50,6 @@ export default function DashboardPage() {
   const [diaSelecionado, setDiaSelecionado] = useState(null);
   const [usuario, setUsuario] = useState(null);
   const [periodoDias, setPeriodoDias] = useState(30);
-  const [templates, setTemplates] = useState(null);
 
   useEffect(() => {
     setCarregando(true);
@@ -57,11 +64,6 @@ export default function DashboardPage() {
     fetch("/api/auth/me")
       .then((r) => r.json())
       .then((data) => setUsuario(data.user))
-      .catch(() => {});
-
-    fetch("/api/settings")
-      .then((r) => r.json())
-      .then((data) => setTemplates(data.config || null))
       .catch(() => {});
   }, []);
 
@@ -86,6 +88,11 @@ export default function DashboardPage() {
     return eachDayOfInterval({ start: inicio, end: fim });
   }, [modo, referencia]);
 
+  const datasComemorativas = useMemo(() => {
+    const anos = new Set(dias.map((d) => d.getFullYear()));
+    return obterDatasComemorativasParaAnos([...anos]);
+  }, [dias]);
+
   function navegar(direcao) {
     setReferencia((atual) =>
       modo === "semana" ? addWeeks(atual, direcao) : addMonths(atual, direcao)
@@ -95,6 +102,9 @@ export default function DashboardPage() {
   const pedidosDoDiaSelecionado = diaSelecionado
     ? pedidosPorDia[format(diaSelecionado, "yyyy-MM-dd")] || []
     : [];
+  const comemorativaDoDiaSelecionado = diaSelecionado
+    ? datasComemorativas[format(diaSelecionado, "yyyy-MM-dd")]
+    : null;
 
   const kpis = useMemo(() => {
     const hoje = new Date();
@@ -122,11 +132,6 @@ export default function DashboardPage() {
 
     return { totalPedidos, aReceber, recebido };
   }, [pedidos, periodoDias]);
-
-  const lembretesPendentes = useMemo(
-    () => listarLembretes(pedidos).filter((item) => !item.enviado).slice(0, 6),
-    [pedidos]
-  );
 
   return (
     <div>
@@ -168,8 +173,6 @@ export default function DashboardPage() {
         <CartaoKpi icone="✅" cor="var(--sage-bg)" corIcone="var(--sage)" label="Recebido" valor={`R$ ${kpis.recebido.toFixed(2)}`} />
       </div>
 
-      <div className="grid-dashboard">
-      <div style={{ minWidth: 0 }}>
       <header style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: "1.6rem", flexWrap: "wrap", gap: "0.6rem" }}>
         <div>
           <p className="label" style={{ color: "var(--accent)" }}>Agenda</p>
@@ -216,21 +219,39 @@ export default function DashboardPage() {
           {dias.map((dia) => {
             const chave = format(dia, "yyyy-MM-dd");
             const doDia = pedidosPorDia[chave] || [];
+            const comemorativa = datasComemorativas[chave];
             return (
               <div key={chave} className="card" style={{ padding: "0.8rem", minHeight: 220, background: isToday(dia) ? "var(--brand-soft)" : "var(--card)" }}>
                 <p style={{ fontSize: "0.75rem", color: "var(--ink-soft)", textTransform: "uppercase", margin: 0 }}>
                   {format(dia, "EEE", { locale: ptBR })}
                 </p>
-                <p className="display" style={{ fontSize: "1.2rem", margin: "0 0 0.6rem" }}>
+                <p className="display" style={{ fontSize: "1.2rem", margin: "0 0 0.2rem" }}>
                   {format(dia, "d")}
                 </p>
+                {comemorativa && (
+                  <p
+                    title={comemorativa.nome}
+                    style={{
+                      fontSize: "0.7rem",
+                      margin: "0 0 0.5rem",
+                      color: comemorativa.tipo === "feriado" ? "var(--accent-dark)" : "var(--honey)",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    {comemorativa.tipo === "feriado" ? "📌" : "🎉"} {comemorativa.nome}
+                  </p>
+                )}
                 <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem" }}>
                   {doDia.map((p) => (
                     <Link
                       key={p.id}
                       href={`/pedidos/${p.id}`}
                       style={{
-                        display: "block",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "0.4rem",
                         fontSize: "0.8rem",
                         padding: "0.4rem 0.5rem",
                         borderRadius: 8,
@@ -238,12 +259,20 @@ export default function DashboardPage() {
                         color: "var(--ink)",
                       }}
                     >
-                      <strong>{p.cliente_nome}</strong>
-                      <br />
-                      <span style={{ color: "var(--ink-soft)" }}>{p.itens}</span>
+                      <span style={{ width: 7, height: 7, borderRadius: "50%", background: COR_STATUS[p.status] || "var(--accent)", flexShrink: 0 }} />
+                      <span>
+                        <strong>{p.cliente_nome}</strong>
+                        <br />
+                        <span style={{ color: "var(--ink-soft)" }}>{p.itens}</span>
+                      </span>
                     </Link>
                   ))}
                 </div>
+                {doDia.length > 0 && (
+                  <p className="mono" style={{ fontSize: "0.72rem", color: "var(--ink-soft)", marginTop: "0.5rem", marginBottom: 0 }}>
+                    Total: R$ {doDia.reduce((soma, p) => soma + (p.status === "cancelado" ? 0 : Number(p.valor_total) || 0), 0).toFixed(2)}
+                  </p>
+                )}
               </div>
             );
           })}
@@ -259,7 +288,9 @@ export default function DashboardPage() {
             {dias.map((dia) => {
               const chave = format(dia, "yyyy-MM-dd");
               const doDia = pedidosPorDia[chave] || [];
+              const comemorativa = datasComemorativas[chave];
               const foraDoMes = !isSameMonth(dia, referencia);
+              const totalDia = doDia.reduce((soma, p) => soma + (p.status === "cancelado" ? 0 : Number(p.valor_total) || 0), 0);
               return (
                 <button
                   key={chave}
@@ -275,13 +306,25 @@ export default function DashboardPage() {
                     border: isToday(dia) ? "1px solid var(--accent)" : "1px solid var(--card-border)",
                   }}
                 >
-                  <div style={{ fontSize: "0.85rem", fontWeight: 600 }}>{format(dia, "d")}</div>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "0.3rem" }}>
+                    <span style={{ fontSize: "0.85rem", fontWeight: 600 }}>{format(dia, "d")}</span>
+                    {comemorativa && (
+                      <span title={comemorativa.nome} style={{ fontSize: "0.75rem" }}>
+                        {comemorativa.tipo === "feriado" ? "📌" : "🎉"}
+                      </span>
+                    )}
+                  </div>
                   {doDia.length > 0 && (
-                    <div style={{ display: "flex", gap: 3, marginTop: 4, flexWrap: "wrap" }}>
-                      {doDia.slice(0, 4).map((p) => (
-                        <span key={p.id} style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--accent)" }} />
-                      ))}
-                    </div>
+                    <>
+                      <div style={{ display: "flex", gap: 3, marginTop: 4, flexWrap: "wrap" }}>
+                        {doDia.slice(0, 4).map((p) => (
+                          <span key={p.id} style={{ width: 6, height: 6, borderRadius: "50%", background: COR_STATUS[p.status] || "var(--accent)" }} />
+                        ))}
+                      </div>
+                      <div className="mono" style={{ fontSize: "0.65rem", color: "var(--ink-soft)", marginTop: 3 }}>
+                        R$ {totalDia.toFixed(0)}
+                      </div>
+                    </>
                   )}
                 </button>
               );
@@ -292,6 +335,11 @@ export default function DashboardPage() {
             <div style={{ marginTop: "1.4rem" }}>
               <h3 className="display" style={{ fontSize: "1.1rem" }}>
                 {format(diaSelecionado, "d 'de' MMMM", { locale: ptBR })}
+                {comemorativaDoDiaSelecionado && (
+                  <span style={{ fontSize: "0.85rem", fontWeight: 500, color: "var(--ink-soft)" }}>
+                    {" "}— {comemorativaDoDiaSelecionado.tipo === "feriado" ? "📌" : "🎉"} {comemorativaDoDiaSelecionado.nome}
+                  </span>
+                )}
               </h3>
               {pedidosDoDiaSelecionado.length === 0 ? (
                 <p style={{ color: "var(--ink-soft)" }}>Nenhuma entrega neste dia.</p>
@@ -310,69 +358,6 @@ export default function DashboardPage() {
               )}
             </div>
           )}
-        </div>
-      )}
-      </div>
-
-      <PainelLembretes itens={lembretesPendentes} templates={templates} />
-      </div>
-    </div>
-  );
-}
-
-function PainelLembretes({ itens, templates }) {
-  return (
-    <div className="card" style={{ padding: "1.1rem" }}>
-      <h3 className="display" style={{ fontSize: "1.05rem", margin: "0 0 0.9rem" }}>🔔 Próximos lembretes</h3>
-      {itens.length === 0 ? (
-        <p style={{ color: "var(--ink-soft)", fontSize: "0.85rem" }}>Nenhum lembrete pendente.</p>
-      ) : (
-        <div style={{ display: "flex", flexDirection: "column", gap: "0.6rem" }}>
-          {itens.map((item) => {
-            const link = item.tipo !== "entrega" ? linkWhatsApp(item.telefone, mensagemPadrao(item, templates)) : null;
-            return (
-              <div
-                key={`${item.pedidoId}-${item.tipo}`}
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  gap: "0.6rem",
-                  padding: "0.6rem 0.7rem",
-                  background: "var(--brand-soft)",
-                  borderRadius: 12,
-                }}
-              >
-                <div>
-                  <div style={{ fontSize: "0.85rem", fontWeight: 600 }}>{item.texto}</div>
-                  <div style={{ fontSize: "0.75rem", color: "var(--ink-soft)" }}>{formatarDataRelativa(item.data)}</div>
-                </div>
-                {link && (
-                  <a
-                    href={link}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    title="Enviar lembrete pelo WhatsApp"
-                    style={{
-                      width: 30,
-                      height: 30,
-                      borderRadius: "50%",
-                      background: "var(--sage)",
-                      color: "#fff",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      flexShrink: 0,
-                      fontSize: "0.9rem",
-                      textDecoration: "none",
-                    }}
-                  >
-                    ✆
-                  </a>
-                )}
-              </div>
-            );
-          })}
         </div>
       )}
     </div>

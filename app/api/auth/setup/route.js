@@ -33,9 +33,9 @@ export async function POST(request) {
     const senhaHash = await hashPassword(senha);
 
     const result = await query(
-      `INSERT INTO usuarios (nome, email, senha_hash, papel)
-       VALUES ($1, $2, $3, 'admin')
-       RETURNING id, nome, email, papel`,
+      `INSERT INTO usuarios (nome, email, senha_hash, papel, tutorial_visto)
+       VALUES ($1, $2, $3, 'admin', false)
+       RETURNING id, nome, email, papel, permissoes, tutorial_visto`,
       [nome, email.toLowerCase(), senhaHash]
     );
 

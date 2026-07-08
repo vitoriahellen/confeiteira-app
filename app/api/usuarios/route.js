@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { query, ensureSchema } from "@/lib/db";
 import { getCurrentUser, hashPassword } from "@/lib/auth";
+import { registrarEvento } from "@/lib/auditoria";
 
 export async function GET() {
   const user = await getCurrentUser();
@@ -11,7 +12,7 @@ export async function GET() {
 
   await ensureSchema();
   const result = await query(
-    "SELECT id, nome, email, papel, telefone, criado_em FROM usuarios ORDER BY criado_em ASC"
+    "SELECT id, nome, email, papel, telefone, permissoes, criado_em FROM usuarios ORDER BY criado_em ASC"
   );
   return NextResponse.json({ usuarios: result.rows });
 }
@@ -35,11 +36,18 @@ export async function POST(request) {
   try {
     const senhaHash = await hashPassword(senha);
     const result = await query(
-      `INSERT INTO usuarios (nome, email, senha_hash, papel, telefone)
-       VALUES ($1, $2, $3, 'membro', $4)
-       RETURNING id, nome, email, papel, telefone, criado_em`,
+      `INSERT INTO usuarios (nome, email, senha_hash, papel, telefone, tutorial_visto)
+       VALUES ($1, $2, $3, 'membro', $4, false)
+       RETURNING id, nome, email, papel, telefone, permissoes, criado_em`,
       [nome, email.toLowerCase(), senhaHash, telefone || null]
     );
+    await registrarEvento({
+      usuarioId: user.id,
+      usuarioNome: user.nome,
+      tipo: "criacao",
+      modulo: "usuarios",
+      detalhes: `Criou usuária ${nome} (${email}).`,
+    });
     return NextResponse.json({ usuario: result.rows[0] });
   } catch (err) {
     if (String(err.message).includes("duplicate key")) {
