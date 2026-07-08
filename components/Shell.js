@@ -15,7 +15,6 @@ const LINKS = [
   { href: "/clientes", label: "Clientes", icon: "📇", modulo: "clientes" },
   { href: "/financeiro", label: "Financeiro", icon: "💰", modulo: "financeiro" },
   { href: "/mensageria", label: "Mensageria", icon: "📨", modulo: "mensageria" },
-  { href: "/usuarios", label: "Usuárias", icon: "👥", adminOnly: true },
   { href: "/configuracoes", label: "Configurações", icon: "⚙️", adminOnly: true },
 ];
 

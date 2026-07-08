@@ -19,7 +19,7 @@ const MODULO_POR_ROTA = [
   { prefixo: "/mensageria", modulo: "mensageria" },
 ];
 // Rotas restritas a administradoras (reforça no servidor o que já era só client-side no Shell).
-const ROTAS_ADMIN = ["/usuarios", "/configuracoes"];
+const ROTAS_ADMIN = ["/configuracoes"];
 
 export async function middleware(request) {
   const { pathname } = request.nextUrl;

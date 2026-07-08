@@ -15,7 +15,6 @@ export async function GET() {
   return NextResponse.json({
     instanceId: cfg.instanceId,
     tokenDefinido: cfg.tokenDefinido,
-    clientTokenDefinido: cfg.clientTokenDefinido,
     numeroInterno: cfg.numeroInterno,
   });
 }
