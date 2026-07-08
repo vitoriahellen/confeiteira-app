@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { query, ensureSchema } from "@/lib/db";
-import { enviarWhatsApp } from "@/lib/zapi";
+import { enviarWhatsApp } from "@/lib/superchat";
 import { renderTemplate, TEMPLATES_PADRAO } from "@/lib/lembretes";
 
 function autorizado(request) {
@@ -37,7 +37,7 @@ export async function GET(request) {
 
   for (const pedido of result.rows) {
     // Alerta interno (equipe) — envia para o próprio número configurado como admin, se houver
-    const numeroInterno = process.env.ZAPI_NUMERO_INTERNO;
+    const numeroInterno = process.env.SUPERCHAT_NUMERO_INTERNO;
     const mensagemInterna = renderTemplate(modeloEntrega, {
       nomedocliente: pedido.cliente_nome,
       itens: pedido.itens,

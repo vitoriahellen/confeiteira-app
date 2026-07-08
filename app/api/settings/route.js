@@ -22,7 +22,7 @@ export async function GET() {
 
   return NextResponse.json({
     config,
-    zapiConfigurada: Boolean(process.env.ZAPI_INSTANCE_ID && process.env.ZAPI_TOKEN),
+    superchatConfigurada: Boolean(process.env.SUPERCHAT_API_KEY),
   });
 }
 

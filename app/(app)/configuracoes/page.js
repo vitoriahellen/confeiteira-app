@@ -10,7 +10,7 @@ export default function ConfiguracoesPage() {
     dias_alerta_entrega: "3",
     ...TEMPLATES_PADRAO,
   });
-  const [zapiConfigurada, setZapiConfigurada] = useState(false);
+  const [superchatConfigurada, setSuperchatConfigurada] = useState(false);
   const [carregando, setCarregando] = useState(true);
   const [salvando, setSalvando] = useState(false);
   const [salvo, setSalvo] = useState(false);
@@ -26,7 +26,7 @@ export default function ConfiguracoesPage() {
       .then((data) => {
         if (data.config) setConfig(data.config);
         setLogoUrl(data.config?.logo_url || "");
-        setZapiConfigurada(Boolean(data.zapiConfigurada));
+        setSuperchatConfigurada(Boolean(data.superchatConfigurada));
         setCarregando(false);
       })
       .catch(() => setCarregando(false));
@@ -141,13 +141,13 @@ export default function ConfiguracoesPage() {
 
       <div className="card" style={{ padding: "1.4rem", marginBottom: "1.4rem", maxWidth: 560 }}>
         <div style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>
-          <span style={{ width: 10, height: 10, borderRadius: "50%", background: zapiConfigurada ? "var(--sage)" : "#c98a3f" }} />
-          <strong>{zapiConfigurada ? "Z-API conectada" : "Z-API não configurada"}</strong>
+          <span style={{ width: 10, height: 10, borderRadius: "50%", background: superchatConfigurada ? "var(--sage)" : "#c98a3f" }} />
+          <strong>{superchatConfigurada ? "Superchat conectada" : "Superchat não configurada"}</strong>
         </div>
         <p style={{ color: "var(--ink-soft)", fontSize: "0.88rem", marginTop: "0.5rem" }}>
-          {zapiConfigurada
-            ? "As variáveis ZAPI_INSTANCE_ID e ZAPI_TOKEN estão definidas no projeto. Os lembretes de pagamento serão enviados automaticamente por WhatsApp."
-            : "Defina as variáveis de ambiente ZAPI_INSTANCE_ID, ZAPI_TOKEN e ZAPI_CLIENT_TOKEN no painel do Vercel para ativar o envio automático de mensagens."}
+          {superchatConfigurada
+            ? "A variável SUPERCHAT_API_KEY está definida no projeto. Os lembretes de pagamento serão enviados automaticamente por WhatsApp."
+            : "Defina a variável de ambiente SUPERCHAT_API_KEY no painel do Vercel para ativar o envio automático de mensagens."}
         </p>
       </div>
 

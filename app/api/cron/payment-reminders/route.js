@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { query, ensureSchema } from "@/lib/db";
-import { enviarWhatsApp } from "@/lib/zapi";
+import { enviarWhatsApp } from "@/lib/superchat";
 import { renderTemplate, TEMPLATES_PADRAO, formatarMoeda } from "@/lib/lembretes";
 
 function autorizado(request) {
