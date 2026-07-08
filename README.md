@@ -27,6 +27,12 @@ Veja `.env.example`. As principais:
   o sistema descobre automaticamente o primeiro canal do tipo WhatsApp da conta.
 - `SUPERCHAT_NUMERO_INTERNO` — número que deve receber o alerta interno de "faltam X dias
   para a entrega" (ex: o seu próprio WhatsApp).
+- `SUPERCHAT_TEMPLATE_SINAL`, `SUPERCHAT_TEMPLATE_RESTANTE`, `SUPERCHAT_TEMPLATE_ENTREGA` —
+  opcionais. Nomes dos Modelos de Mensagem (Templates) aprovados pela Meta no painel da
+  Superchat, usados para iniciar conversa fora da janela de 24h do WhatsApp (sem eles, o
+  envio só funciona se a cliente tiver escrito nas últimas 24h). Se não definidos, o
+  sistema procura templates com os nomes `doce_gestao_sinal`, `doce_gestao_restante` e
+  `doce_gestao_entrega`.
 - `CRON_SECRET` — opcional, mas recomendado. Qualquer string aleatória. A Vercel
   automaticamente envia esse valor no header `Authorization: Bearer <CRON_SECRET>`
   quando dispara os crons.

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { query, ensureSchema } from "@/lib/db";
-import { enviarWhatsApp } from "@/lib/superchat";
+import { enviarLembreteWhatsApp } from "@/lib/superchat";
 import { renderTemplate, TEMPLATES_PADRAO, formatarMoeda } from "@/lib/lembretes";
 
 function autorizado(request) {
@@ -42,13 +42,19 @@ export async function GET(request) {
 
   for (const pedido of sinalRes.rows) {
     if (!pedido.cliente_telefone) continue;
-    const mensagem = renderTemplate(modeloSinal, {
+    const variaveis = {
       nomedocliente: pedido.cliente_nome,
       valor: formatarMoeda(pedido.valor_sinal),
       itens: pedido.itens,
       data: new Date(pedido.data_vencimento_sinal).toLocaleDateString("pt-BR"),
+    };
+    const mensagem = renderTemplate(modeloSinal, variaveis);
+    const resultado = await enviarLembreteWhatsApp({
+      numero: pedido.cliente_telefone,
+      tipo: "sinal",
+      variaveis,
+      mensagem,
     });
-    const resultado = await enviarWhatsApp(pedido.cliente_telefone, mensagem);
     if (resultado.ok) {
       await query(
         `INSERT INTO lembretes_enviados (pedido_id, tipo) VALUES ($1, 'sinal')
@@ -75,13 +81,19 @@ export async function GET(request) {
   for (const pedido of restanteRes.rows) {
     if (!pedido.cliente_telefone) continue;
     const restante = Number(pedido.valor_total) - Number(pedido.valor_sinal);
-    const mensagem = renderTemplate(modeloRestante, {
+    const variaveis = {
       nomedocliente: pedido.cliente_nome,
       valor: formatarMoeda(restante),
       itens: pedido.itens,
       data: new Date(pedido.data_vencimento_restante).toLocaleDateString("pt-BR"),
+    };
+    const mensagem = renderTemplate(modeloRestante, variaveis);
+    const resultado = await enviarLembreteWhatsApp({
+      numero: pedido.cliente_telefone,
+      tipo: "restante",
+      variaveis,
+      mensagem,
     });
-    const resultado = await enviarWhatsApp(pedido.cliente_telefone, mensagem);
     if (resultado.ok) {
       await query(
         `INSERT INTO lembretes_enviados (pedido_id, tipo) VALUES ($1, 'restante')

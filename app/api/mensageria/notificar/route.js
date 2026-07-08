@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import { query } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth";
-import { enviarWhatsApp } from "@/lib/superchat";
-import { mensagemPadrao, TEMPLATES_PADRAO } from "@/lib/lembretes";
+import { enviarLembreteWhatsApp } from "@/lib/superchat";
+import { mensagemPadrao, variaveisLembrete, TEMPLATES_PADRAO } from "@/lib/lembretes";
 
 const TIPOS_VALIDOS = ["sinal", "restante", "entrega"];
 
@@ -48,7 +48,12 @@ export async function POST(request) {
     );
   }
 
-  const resultado = await enviarWhatsApp(destino, mensagem);
+  const resultado = await enviarLembreteWhatsApp({
+    numero: destino,
+    tipo,
+    variaveis: variaveisLembrete({ tipo, pedido }),
+    mensagem,
+  });
   if (!resultado.ok) {
     return NextResponse.json(
       { error: resultado.skipped ? "Superchat não configurada no projeto." : "Não foi possível enviar a mensagem agora." },
