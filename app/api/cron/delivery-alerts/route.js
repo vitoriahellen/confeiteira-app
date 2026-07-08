@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { query, ensureSchema } from "@/lib/db";
-import { enviarLembreteWhatsApp } from "@/lib/superchat";
+import { enviarLembreteWhatsApp, numeroInternoConfigurado } from "@/lib/mensageria";
 import { renderTemplate, TEMPLATES_PADRAO } from "@/lib/lembretes";
 
 function autorizado(request) {
@@ -35,9 +35,10 @@ export async function GET(request) {
     [dias]
   );
 
+  const numeroInterno = await numeroInternoConfigurado();
+
   for (const pedido of result.rows) {
     // Alerta interno (equipe) — envia para o próprio número configurado como admin, se houver
-    const numeroInterno = process.env.SUPERCHAT_NUMERO_INTERNO;
     const variaveis = {
       nomedocliente: pedido.cliente_nome,
       itens: pedido.itens,

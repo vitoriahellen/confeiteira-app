@@ -11,24 +11,13 @@ const ABAS = [
   { chave: "logs", label: "Logs" },
 ];
 
-const VARIAVEIS_INTEGRACAO = [
-  "SUPERCHAT_API_KEY",
-  "SUPERCHAT_CHANNEL_ID",
-  "SUPERCHAT_NUMERO_INTERNO",
-  "SUPERCHAT_TEMPLATE_SINAL",
-  "SUPERCHAT_TEMPLATE_RESTANTE",
-  "SUPERCHAT_TEMPLATE_ENTREGA",
-];
-
 export default function ConfiguracoesPage() {
   const [aba, setAba] = useState("mensagens");
   const [config, setConfig] = useState({
     dias_lembrete_pagamento: "2",
     dias_alerta_entrega: "3",
-    mostrar_integracao_mensageria: "nao",
     ...TEMPLATES_PADRAO,
   });
-  const [superchatConfigurada, setSuperchatConfigurada] = useState(false);
   const [carregando, setCarregando] = useState(true);
   const [salvando, setSalvando] = useState(false);
   const [salvo, setSalvo] = useState(false);
@@ -44,7 +33,6 @@ export default function ConfiguracoesPage() {
       .then((data) => {
         if (data.config) setConfig((atual) => ({ ...atual, ...data.config }));
         setLogoUrl(data.config?.logo_url || "");
-        setSuperchatConfigurada(Boolean(data.superchatConfigurada));
         setCarregando(false);
       })
       .catch(() => setCarregando(false));
@@ -61,15 +49,6 @@ export default function ConfiguracoesPage() {
     });
     setSalvando(false);
     setSalvo(true);
-  }
-
-  async function salvarParametro(chave, valor) {
-    setConfig((atual) => ({ ...atual, [chave]: valor }));
-    await fetch("/api/settings", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ [chave]: valor }),
-    });
   }
 
   function handleArquivoLogo(e) {
@@ -249,42 +228,7 @@ export default function ConfiguracoesPage() {
             </div>
           </div>
 
-          <div className="card" style={{ padding: "1.4rem" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>
-              <span style={{ width: 10, height: 10, borderRadius: "50%", background: superchatConfigurada ? "var(--sage)" : "#c98a3f" }} />
-              <strong>{superchatConfigurada ? "Superchat conectada" : "Superchat não configurada"}</strong>
-            </div>
-            <p style={{ color: "var(--ink-soft)", fontSize: "0.88rem", marginTop: "0.5rem" }}>
-              {superchatConfigurada
-                ? "A variável SUPERCHAT_API_KEY está definida no projeto. Os lembretes de pagamento serão enviados automaticamente por WhatsApp."
-                : "Defina a variável de ambiente SUPERCHAT_API_KEY no painel do Vercel para ativar o envio automático de mensagens."}
-            </p>
-
-            <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginTop: "1rem", fontSize: "0.85rem", cursor: "pointer" }}>
-              <input
-                type="checkbox"
-                checked={config.mostrar_integracao_mensageria === "sim"}
-                onChange={(e) => salvarParametro("mostrar_integracao_mensageria", e.target.checked ? "sim" : "nao")}
-              />
-              Mostrar informações da integração (variáveis de ambiente)
-            </label>
-
-            {config.mostrar_integracao_mensageria === "sim" && (
-              <div style={{ marginTop: "0.8rem", background: "var(--bg)", borderRadius: 10, padding: "0.8rem" }}>
-                <p style={{ fontSize: "0.78rem", color: "var(--ink-soft)", marginBottom: "0.5rem" }}>
-                  Só mostra se cada variável está definida no projeto (nunca o valor/segredo em si).
-                </p>
-                {VARIAVEIS_INTEGRACAO.map((nome) => (
-                  <div key={nome} style={{ display: "flex", justifyContent: "space-between", fontSize: "0.82rem", padding: "0.2rem 0" }}>
-                    <code className="mono">{nome}</code>
-                    <span style={{ color: "var(--ink-soft)" }}>
-                      {nome === "SUPERCHAT_API_KEY" ? (superchatConfigurada ? "✓ definida" : "não definida") : "verifique na Vercel"}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+          <CardMensageria />
 
           <div className="card" style={{ padding: "1.4rem" }}>
             <h3 className="display" style={{ fontSize: "1.05rem", margin: "0 0 0.6rem" }}>Tutorial</h3>
@@ -320,6 +264,185 @@ function CampoMensagem({ label, value, onChange, exemplo }) {
       <p style={{ fontSize: "0.78rem", color: "var(--ink-soft)", marginTop: "0.3rem" }}>
         Prévia: <em>{renderTemplate(value, exemplo)}</em>
       </p>
+    </div>
+  );
+}
+
+const PROVEDORES = [
+  { chave: "superchat", label: "Superchat" },
+  { chave: "zapi", label: "Z-API" },
+];
+
+function CardMensageria() {
+  const [provedor, setProvedor] = useState("superchat");
+  const [superchat, setSuperchat] = useState({
+    apiKey: "",
+    apiKeyDefinida: false,
+    channelId: "",
+    numeroInterno: "",
+    templateSinal: "",
+    templateRestante: "",
+    templateEntrega: "",
+  });
+  const [zapi, setZapi] = useState({
+    instanceId: "",
+    token: "",
+    tokenDefinido: false,
+    clientToken: "",
+    clientTokenDefinido: false,
+    numeroInterno: "",
+  });
+  const [carregando, setCarregando] = useState(true);
+  const [salvando, setSalvando] = useState(false);
+  const [salvo, setSalvo] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/mensageria/config")
+      .then((r) => r.json())
+      .then((data) => {
+        setProvedor(data.provedor || "superchat");
+        setSuperchat((atual) => ({ ...atual, ...data.superchat, apiKey: "" }));
+        setZapi((atual) => ({ ...atual, ...data.zapi, token: "", clientToken: "" }));
+        setCarregando(false);
+      })
+      .catch(() => setCarregando(false));
+  }, []);
+
+  async function salvar() {
+    setSalvando(true);
+    setSalvo(false);
+    await fetch("/api/mensageria/config", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ provedor, superchat, zapi }),
+    });
+    setSuperchat((atual) => ({ ...atual, apiKey: "" }));
+    setZapi((atual) => ({ ...atual, token: "", clientToken: "" }));
+    setSalvando(false);
+    setSalvo(true);
+  }
+
+  if (carregando) {
+    return (
+      <div className="card" style={{ padding: "1.4rem" }}>
+        <p style={{ color: "var(--ink-soft)" }}>Carregando...</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="card" style={{ padding: "1.4rem" }}>
+      <h3 className="display" style={{ fontSize: "1.05rem", margin: "0 0 0.9rem" }}>Mensageria (WhatsApp)</h3>
+
+      <div style={{ display: "flex", border: "1px solid var(--card-border)", borderRadius: 999, padding: 4, marginBottom: "1rem", width: "fit-content" }}>
+        {PROVEDORES.map((p) => (
+          <button
+            key={p.chave}
+            type="button"
+            onClick={() => setProvedor(p.chave)}
+            className="btn"
+            style={{
+              background: provedor === p.chave ? "var(--accent)" : "transparent",
+              color: provedor === p.chave ? "#fff" : "var(--ink-soft)",
+              padding: "0.4rem 0.9rem",
+            }}
+          >
+            {p.label}
+          </button>
+        ))}
+      </div>
+
+      {provedor === "superchat" ? (
+        <div style={{ display: "flex", flexDirection: "column", gap: "0.8rem" }}>
+          <div>
+            <label className="label">API Key</label>
+            <input
+              className="input"
+              type="password"
+              autoComplete="off"
+              placeholder={superchat.apiKeyDefinida ? "•••••••• (definida — deixe em branco pra manter)" : "Cole o token da Superchat"}
+              value={superchat.apiKey}
+              onChange={(e) => setSuperchat({ ...superchat, apiKey: e.target.value })}
+            />
+          </div>
+          <div>
+            <label className="label">Channel ID (opcional)</label>
+            <input
+              className="input"
+              value={superchat.channelId}
+              onChange={(e) => setSuperchat({ ...superchat, channelId: e.target.value })}
+              placeholder="Descoberto automaticamente se vazio"
+            />
+          </div>
+          <div>
+            <label className="label">Número interno (alertas de entrega)</label>
+            <input
+              className="input"
+              value={superchat.numeroInterno}
+              onChange={(e) => setSuperchat({ ...superchat, numeroInterno: e.target.value })}
+              placeholder="Ex: 5519999999999"
+            />
+          </div>
+          <details>
+            <summary style={{ cursor: "pointer", fontSize: "0.85rem", color: "var(--ink-soft)" }}>
+              Nomes dos templates aprovados (opcional)
+            </summary>
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.6rem", marginTop: "0.6rem" }}>
+              <input className="input" value={superchat.templateSinal} onChange={(e) => setSuperchat({ ...superchat, templateSinal: e.target.value })} placeholder="doce_gestao_sinal" />
+              <input className="input" value={superchat.templateRestante} onChange={(e) => setSuperchat({ ...superchat, templateRestante: e.target.value })} placeholder="doce_gestao_restante" />
+              <input className="input" value={superchat.templateEntrega} onChange={(e) => setSuperchat({ ...superchat, templateEntrega: e.target.value })} placeholder="doce_gestao_entrega" />
+            </div>
+          </details>
+        </div>
+      ) : (
+        <div style={{ display: "flex", flexDirection: "column", gap: "0.8rem" }}>
+          <div>
+            <label className="label">Instance ID</label>
+            <input className="input" value={zapi.instanceId} onChange={(e) => setZapi({ ...zapi, instanceId: e.target.value })} />
+          </div>
+          <div>
+            <label className="label">Token</label>
+            <input
+              className="input"
+              type="password"
+              autoComplete="off"
+              placeholder={zapi.tokenDefinido ? "•••••••• (definido — deixe em branco pra manter)" : "Token da instância"}
+              value={zapi.token}
+              onChange={(e) => setZapi({ ...zapi, token: e.target.value })}
+            />
+          </div>
+          <div>
+            <label className="label">Client-Token (segurança da conta)</label>
+            <input
+              className="input"
+              type="password"
+              autoComplete="off"
+              placeholder={zapi.clientTokenDefinido ? "•••••••• (definido — deixe em branco pra manter)" : "Opcional"}
+              value={zapi.clientToken}
+              onChange={(e) => setZapi({ ...zapi, clientToken: e.target.value })}
+            />
+          </div>
+          <div>
+            <label className="label">Número interno (alertas de entrega)</label>
+            <input
+              className="input"
+              value={zapi.numeroInterno}
+              onChange={(e) => setZapi({ ...zapi, numeroInterno: e.target.value })}
+              placeholder="Ex: 5519999999999"
+            />
+          </div>
+        </div>
+      )}
+
+      <p style={{ fontSize: "0.75rem", color: "var(--ink-soft)", marginTop: "0.8rem" }}>
+        Os tokens ficam salvos criptografados no banco de dados — depois de salvos, não são mostrados de novo
+        (deixe o campo em branco para manter o valor já salvo).
+      </p>
+
+      <button type="button" className="btn btn-primary" onClick={salvar} disabled={salvando} style={{ marginTop: "0.8rem" }}>
+        {salvando ? "Salvando..." : "Salvar mensageria"}
+      </button>
+      {salvo && <p style={{ color: "var(--sage)", fontSize: "0.85rem", marginTop: "0.5rem" }}>Configuração salva.</p>}
     </div>
   );
 }

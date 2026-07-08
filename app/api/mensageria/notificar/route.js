@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { query } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth";
-import { enviarLembreteWhatsApp } from "@/lib/superchat";
+import { enviarLembreteWhatsApp, numeroInternoConfigurado } from "@/lib/mensageria";
 import { mensagemPadrao, variaveisLembrete, TEMPLATES_PADRAO } from "@/lib/lembretes";
 
 const TIPOS_VALIDOS = ["sinal", "restante", "entrega"];
@@ -35,13 +35,13 @@ export async function POST(request) {
   const mensagem = mensagemPadrao({ tipo, pedido }, templates);
 
   // Cobrança de sinal/restante vai pro WhatsApp da cliente; alerta de entrega é interno (equipe)
-  const destino = tipo === "entrega" ? process.env.SUPERCHAT_NUMERO_INTERNO : pedido.cliente_telefone;
+  const destino = tipo === "entrega" ? await numeroInternoConfigurado() : pedido.cliente_telefone;
   if (!destino) {
     return NextResponse.json(
       {
         error:
           tipo === "entrega"
-            ? "Defina a variável SUPERCHAT_NUMERO_INTERNO no projeto para receber alertas de entrega."
+            ? "Defina o número interno em Configurações → Parâmetros para receber alertas de entrega."
             : "Esta cliente não tem WhatsApp cadastrado.",
       },
       { status: 400 }
@@ -56,7 +56,7 @@ export async function POST(request) {
   });
   if (!resultado.ok) {
     return NextResponse.json(
-      { error: resultado.skipped ? "Superchat não configurada no projeto." : "Não foi possível enviar a mensagem agora." },
+      { error: resultado.skipped ? "Mensageria não configurada." : "Não foi possível enviar a mensagem agora." },
       { status: 502 }
     );
   }

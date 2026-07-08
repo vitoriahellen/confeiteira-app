@@ -7,7 +7,6 @@ import { TEMPLATES_PADRAO } from "@/lib/lembretes";
 const DEFAULTS = {
   dias_lembrete_pagamento: "2",
   dias_alerta_entrega: "3",
-  mostrar_integracao_mensageria: "nao",
   ...TEMPLATES_PADRAO,
 };
 
@@ -22,10 +21,7 @@ export async function GET() {
   const config = { ...DEFAULTS };
   for (const row of result.rows) config[row.chave] = row.valor;
 
-  return NextResponse.json({
-    config,
-    superchatConfigurada: Boolean(process.env.SUPERCHAT_API_KEY),
-  });
+  return NextResponse.json({ config });
 }
 
 export async function POST(request) {
