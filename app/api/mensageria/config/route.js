@@ -13,21 +13,10 @@ export async function GET() {
 
   // Nunca devolve o valor decifrado dos segredos pro navegador — só se está definido.
   return NextResponse.json({
-    provedor: cfg.provedor,
-    superchat: {
-      apiKeyDefinida: cfg.superchat.apiKeyDefinida,
-      channelId: cfg.superchat.channelId,
-      numeroInterno: cfg.superchat.numeroInterno,
-      templateSinal: cfg.superchat.templateSinal,
-      templateRestante: cfg.superchat.templateRestante,
-      templateEntrega: cfg.superchat.templateEntrega,
-    },
-    zapi: {
-      instanceId: cfg.zapi.instanceId,
-      tokenDefinido: cfg.zapi.tokenDefinido,
-      clientTokenDefinido: cfg.zapi.clientTokenDefinido,
-      numeroInterno: cfg.zapi.numeroInterno,
-    },
+    instanceId: cfg.instanceId,
+    tokenDefinido: cfg.tokenDefinido,
+    clientTokenDefinido: cfg.clientTokenDefinido,
+    numeroInterno: cfg.numeroInterno,
   });
 }
 

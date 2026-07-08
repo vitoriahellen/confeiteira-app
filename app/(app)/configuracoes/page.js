@@ -268,22 +268,7 @@ function CampoMensagem({ label, value, onChange, exemplo }) {
   );
 }
 
-const PROVEDORES = [
-  { chave: "superchat", label: "Superchat" },
-  { chave: "zapi", label: "Z-API" },
-];
-
 function CardMensageria() {
-  const [provedor, setProvedor] = useState("superchat");
-  const [superchat, setSuperchat] = useState({
-    apiKey: "",
-    apiKeyDefinida: false,
-    channelId: "",
-    numeroInterno: "",
-    templateSinal: "",
-    templateRestante: "",
-    templateEntrega: "",
-  });
   const [zapi, setZapi] = useState({
     instanceId: "",
     token: "",
@@ -300,9 +285,7 @@ function CardMensageria() {
     fetch("/api/mensageria/config")
       .then((r) => r.json())
       .then((data) => {
-        setProvedor(data.provedor || "superchat");
-        setSuperchat((atual) => ({ ...atual, ...data.superchat, apiKey: "" }));
-        setZapi((atual) => ({ ...atual, ...data.zapi, token: "", clientToken: "" }));
+        setZapi((atual) => ({ ...atual, ...data, token: "", clientToken: "" }));
         setCarregando(false);
       })
       .catch(() => setCarregando(false));
@@ -314,9 +297,8 @@ function CardMensageria() {
     await fetch("/api/mensageria/config", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ provedor, superchat, zapi }),
+      body: JSON.stringify(zapi),
     });
-    setSuperchat((atual) => ({ ...atual, apiKey: "" }));
     setZapi((atual) => ({ ...atual, token: "", clientToken: "" }));
     setSalvando(false);
     setSalvo(true);
@@ -332,107 +314,45 @@ function CardMensageria() {
 
   return (
     <div className="card" style={{ padding: "1.4rem" }}>
-      <h3 className="display" style={{ fontSize: "1.05rem", margin: "0 0 0.9rem" }}>Mensageria (WhatsApp)</h3>
+      <h3 className="display" style={{ fontSize: "1.05rem", margin: "0 0 0.9rem" }}>Mensageria (WhatsApp via Z-API)</h3>
 
-      <div style={{ display: "flex", border: "1px solid var(--card-border)", borderRadius: 999, padding: 4, marginBottom: "1rem", width: "fit-content" }}>
-        {PROVEDORES.map((p) => (
-          <button
-            key={p.chave}
-            type="button"
-            onClick={() => setProvedor(p.chave)}
-            className="btn"
-            style={{
-              background: provedor === p.chave ? "var(--accent)" : "transparent",
-              color: provedor === p.chave ? "#fff" : "var(--ink-soft)",
-              padding: "0.4rem 0.9rem",
-            }}
-          >
-            {p.label}
-          </button>
-        ))}
+      <div style={{ display: "flex", flexDirection: "column", gap: "0.8rem" }}>
+        <div>
+          <label className="label">Instance ID</label>
+          <input className="input" value={zapi.instanceId} onChange={(e) => setZapi({ ...zapi, instanceId: e.target.value })} />
+        </div>
+        <div>
+          <label className="label">Token</label>
+          <input
+            className="input"
+            type="password"
+            autoComplete="off"
+            placeholder={zapi.tokenDefinido ? "•••••••• (definido — deixe em branco pra manter)" : "Token da instância"}
+            value={zapi.token}
+            onChange={(e) => setZapi({ ...zapi, token: e.target.value })}
+          />
+        </div>
+        <div>
+          <label className="label">Client-Token (segurança da conta, opcional)</label>
+          <input
+            className="input"
+            type="password"
+            autoComplete="off"
+            placeholder={zapi.clientTokenDefinido ? "•••••••• (definido — deixe em branco pra manter)" : "Opcional"}
+            value={zapi.clientToken}
+            onChange={(e) => setZapi({ ...zapi, clientToken: e.target.value })}
+          />
+        </div>
+        <div>
+          <label className="label">Número interno (alertas de entrega)</label>
+          <input
+            className="input"
+            value={zapi.numeroInterno}
+            onChange={(e) => setZapi({ ...zapi, numeroInterno: e.target.value })}
+            placeholder="Ex: 5519999999999"
+          />
+        </div>
       </div>
-
-      {provedor === "superchat" ? (
-        <div style={{ display: "flex", flexDirection: "column", gap: "0.8rem" }}>
-          <div>
-            <label className="label">API Key</label>
-            <input
-              className="input"
-              type="password"
-              autoComplete="off"
-              placeholder={superchat.apiKeyDefinida ? "•••••••• (definida — deixe em branco pra manter)" : "Cole o token da Superchat"}
-              value={superchat.apiKey}
-              onChange={(e) => setSuperchat({ ...superchat, apiKey: e.target.value })}
-            />
-          </div>
-          <div>
-            <label className="label">Channel ID (opcional)</label>
-            <input
-              className="input"
-              value={superchat.channelId}
-              onChange={(e) => setSuperchat({ ...superchat, channelId: e.target.value })}
-              placeholder="Descoberto automaticamente se vazio"
-            />
-          </div>
-          <div>
-            <label className="label">Número interno (alertas de entrega)</label>
-            <input
-              className="input"
-              value={superchat.numeroInterno}
-              onChange={(e) => setSuperchat({ ...superchat, numeroInterno: e.target.value })}
-              placeholder="Ex: 5519999999999"
-            />
-          </div>
-          <details>
-            <summary style={{ cursor: "pointer", fontSize: "0.85rem", color: "var(--ink-soft)" }}>
-              Nomes dos templates aprovados (opcional)
-            </summary>
-            <div style={{ display: "flex", flexDirection: "column", gap: "0.6rem", marginTop: "0.6rem" }}>
-              <input className="input" value={superchat.templateSinal} onChange={(e) => setSuperchat({ ...superchat, templateSinal: e.target.value })} placeholder="doce_gestao_sinal" />
-              <input className="input" value={superchat.templateRestante} onChange={(e) => setSuperchat({ ...superchat, templateRestante: e.target.value })} placeholder="doce_gestao_restante" />
-              <input className="input" value={superchat.templateEntrega} onChange={(e) => setSuperchat({ ...superchat, templateEntrega: e.target.value })} placeholder="doce_gestao_entrega" />
-            </div>
-          </details>
-        </div>
-      ) : (
-        <div style={{ display: "flex", flexDirection: "column", gap: "0.8rem" }}>
-          <div>
-            <label className="label">Instance ID</label>
-            <input className="input" value={zapi.instanceId} onChange={(e) => setZapi({ ...zapi, instanceId: e.target.value })} />
-          </div>
-          <div>
-            <label className="label">Token</label>
-            <input
-              className="input"
-              type="password"
-              autoComplete="off"
-              placeholder={zapi.tokenDefinido ? "•••••••• (definido — deixe em branco pra manter)" : "Token da instância"}
-              value={zapi.token}
-              onChange={(e) => setZapi({ ...zapi, token: e.target.value })}
-            />
-          </div>
-          <div>
-            <label className="label">Client-Token (segurança da conta)</label>
-            <input
-              className="input"
-              type="password"
-              autoComplete="off"
-              placeholder={zapi.clientTokenDefinido ? "•••••••• (definido — deixe em branco pra manter)" : "Opcional"}
-              value={zapi.clientToken}
-              onChange={(e) => setZapi({ ...zapi, clientToken: e.target.value })}
-            />
-          </div>
-          <div>
-            <label className="label">Número interno (alertas de entrega)</label>
-            <input
-              className="input"
-              value={zapi.numeroInterno}
-              onChange={(e) => setZapi({ ...zapi, numeroInterno: e.target.value })}
-              placeholder="Ex: 5519999999999"
-            />
-          </div>
-        </div>
-      )}
 
       <p style={{ fontSize: "0.75rem", color: "var(--ink-soft)", marginTop: "0.8rem" }}>
         Os tokens ficam salvos criptografados no banco de dados — depois de salvos, não são mostrados de novo

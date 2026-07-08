@@ -2,7 +2,7 @@
 
 Sistema simples para substituir o caderno/WhatsApp na organização de encomendas:
 - Cadastro de pedidos com itens, valores, status de pagamento e data de entrega
-- Lembrete automático de pagamento (sinal e restante) por WhatsApp via Superchat ou Z-API
+- Lembrete automático de pagamento (sinal e restante) por WhatsApp via Z-API
 - Alerta automático de prazo de entrega
 - Agenda em visão semana/mês
 - Login com admin (você) que cadastra as demais usuárias da equipe
@@ -25,12 +25,11 @@ Veja `.env.example`. As principais:
   automaticamente envia esse valor no header `Authorization: Bearer <CRON_SECRET>`
   quando dispara os crons.
 
-A integração de WhatsApp (Superchat ou Z-API) **não depende mais de variáveis de ambiente** —
-é configurada direto no app, em **Configurações → Parâmetros**: escolha o provedor e cole os
-tokens ali. Eles ficam salvos criptografados no banco (nunca em texto puro, nunca devolvidos
-pro navegador depois de salvos). As variáveis `SUPERCHAT_*`/`ZAPI_*` em `.env.example` continuam
-funcionando como fallback legado, mas só valem enquanto o campo correspondente não for
-preenchido em Parâmetros.
+A integração de WhatsApp (Z-API) **não depende mais de variáveis de ambiente** — é configurada
+direto no app, em **Configurações → Parâmetros**: cole o Instance ID/Token ali. Eles ficam salvos
+criptografados no banco (nunca em texto puro, nunca devolvidos pro navegador depois de salvos).
+As variáveis `ZAPI_*` em `.env.example` continuam funcionando como fallback legado, mas só valem
+enquanto o campo correspondente não for preenchido em Parâmetros.
 
 ## Lembretes automáticos
 
